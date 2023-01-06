@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PRzHealthcareAPI.Models;
 
@@ -11,9 +12,10 @@ using PRzHealthcareAPI.Models;
 namespace PRzHealthcareAPI.Migrations
 {
     [DbContext(typeof(HealthcareDbContext))]
-    partial class HealthcareDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230106130720_dateofbirth-fix")]
+    partial class dateofbirthfix
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -52,7 +54,7 @@ namespace PRzHealthcareAPI.Migrations
                         .HasColumnType("nvarchar(63)");
 
                     b.Property<DateTime>("Acc_InsertedDate")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime2");
 
                     b.Property<bool>("Acc_IsActive")
                         .HasColumnType("bit");
@@ -68,7 +70,7 @@ namespace PRzHealthcareAPI.Migrations
                         .HasColumnType("nvarchar(63)");
 
                     b.Property<DateTime>("Acc_ModifiedDate")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Acc_Password")
                         .IsRequired()
@@ -125,13 +127,13 @@ namespace PRzHealthcareAPI.Migrations
                         .HasColumnType("int");
 
                     b.Property<DateTime>("Bin_InsertedDate")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime2");
 
                     b.Property<int>("Bin_ModifiedAccId")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("Bin_ModifiedDate")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Bin_Name")
                         .IsRequired()
@@ -161,7 +163,7 @@ namespace PRzHealthcareAPI.Migrations
                         .HasColumnType("int");
 
                     b.Property<DateTime>("Cer_InsertedDate")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime2");
 
                     b.Property<bool>("Cer_IsActive")
                         .HasColumnType("bit");
@@ -170,7 +172,7 @@ namespace PRzHealthcareAPI.Migrations
                         .HasColumnType("int");
 
                     b.Property<DateTime>("Cer_ModifiedDate")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime2");
 
                     b.HasKey("Cer_Id");
 
@@ -204,7 +206,7 @@ namespace PRzHealthcareAPI.Migrations
                         .HasColumnType("int");
 
                     b.Property<DateTime>("Eve_InsertedDate")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime2");
 
                     b.Property<bool>("Eve_IsActive")
                         .HasColumnType("bit");
@@ -213,7 +215,7 @@ namespace PRzHealthcareAPI.Migrations
                         .HasColumnType("int");
 
                     b.Property<DateTime>("Eve_ModifiedDate")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime2");
 
                     b.Property<DateTime>("Eve_TimeFrom")
                         .HasColumnType("datetime2");
@@ -251,7 +253,7 @@ namespace PRzHealthcareAPI.Migrations
                         .HasColumnType("int");
 
                     b.Property<DateTime>("Not_InsertedDate")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime2");
 
                     b.Property<bool>("Not_IsActive")
                         .HasColumnType("bit");
@@ -260,7 +262,7 @@ namespace PRzHealthcareAPI.Migrations
                         .HasColumnType("int");
 
                     b.Property<DateTime>("Not_ModifiedDate")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime2");
 
                     b.Property<int>("Not_NtyId")
                         .HasColumnType("int");
@@ -319,7 +321,7 @@ namespace PRzHealthcareAPI.Migrations
                         .HasColumnType("int");
 
                     b.Property<DateTime>("Vac_InsertedDate")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime2");
 
                     b.Property<bool>("Vac_IsActive")
                         .HasColumnType("bit");
@@ -328,7 +330,7 @@ namespace PRzHealthcareAPI.Migrations
                         .HasColumnType("int");
 
                     b.Property<DateTime>("Vac_ModifiedDate")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Vac_Name")
                         .IsRequired()

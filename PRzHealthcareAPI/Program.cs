@@ -1,21 +1,31 @@
 using FluentValidation.AspNetCore;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using NLog.Web;
 using PRzHealthcareAPI;
 using PRzHealthcareAPI.Middlewares;
+using PRzHealthcareAPI.Models;
 using PRzHealthcareAPI.Services;
 using System.Text;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.WebHost.UseUrls("https://192.168.5.143:7209");
+
 
 var envName = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
 IConfigurationRoot configuration = new ConfigurationBuilder()
-                 .SetBasePath(envName)
-                 .AddJsonFile("appsettings.json", optional: false)
-                 .AddJsonFile($"appsettings.Development.json", optional: false)
-                 .Build();
+                    .SetBasePath(Directory.GetCurrentDirectory()) // requires Microsoft.Extensions.Configuration.Json
+                    .AddJsonFile("appsettings.json") // requires Microsoft.Extensions.Configuration.Json
+                    .AddEnvironmentVariables()
+                    .Build();// requires Microsoft.Extensions.Configuration.EnvironmentVariables
+
+//IConfigurationRoot configuration = new ConfigurationBuilder()
+//                 .SetBasePath(envName)
+//                 .AddJsonFile("appsettings.json", optional: false)
+//                 .AddJsonFile($"appsettings.{envName}.json", optional: true)
+//                 .Build();
 
 var authenticationSettings = new AuthenticationSettings();
 configuration.GetSection("Authentication").Bind(authenticationSettings);
@@ -46,6 +56,11 @@ builder.Services.AddControllers().AddFluentValidation().AddJsonOptions(x => { x.
 /*  Services    */
 //todo: services
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IPasswordHasher<Account>, PasswordHasher<Account>>();
+builder.Services.AddDbContext<HealthcareDbContext>();
+builder.Services.AddScoped<RequestTimeMiddleware>();
+builder.Services.AddScoped<ErrorHandlingMiddleware>();
+
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

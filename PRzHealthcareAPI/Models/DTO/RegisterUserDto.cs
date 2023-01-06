@@ -13,7 +13,7 @@ namespace PRzHealthcareAPI.Models.DTO
         public string? Secondname { get; set; }
         public string Lastname { get; set; }
         public DateTime DateOfBirth { get; set; }
-        public int Pesel { get; set; }
+        public long Pesel { get; set; }
         public string Email { get; set; }
         public string ContactNumber { get; set; }
         public bool IsActive { get; set; }

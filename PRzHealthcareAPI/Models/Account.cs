@@ -15,7 +15,7 @@ namespace PRzHealthcareAPI.Models
         public string? Acc_Secondname { get; set; }
         public string Acc_Lastname { get; set; }
         public DateTime Acc_DateOfBirth { get; set; }
-        public int Acc_Pesel { get; set; }
+        public long Acc_Pesel { get; set; }
         public string Acc_Email { get; set; }
         public string Acc_ContactNumber { get; set; }
         public bool Acc_IsActive { get; set; }
