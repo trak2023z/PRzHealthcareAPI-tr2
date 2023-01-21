@@ -11,21 +11,16 @@ using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.WebHost.UseUrls("https://192.168.5.143:7209");
+builder.WebHost.UseUrls("http://192.168.56.1:5000");
 
 
 var envName = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
 IConfigurationRoot configuration = new ConfigurationBuilder()
-                    .SetBasePath(Directory.GetCurrentDirectory()) // requires Microsoft.Extensions.Configuration.Json
-                    .AddJsonFile("appsettings.json") // requires Microsoft.Extensions.Configuration.Json
+                    .SetBasePath(Directory.GetCurrentDirectory())
+                    .AddJsonFile("appsettings.json")
                     .AddEnvironmentVariables()
-                    .Build();// requires Microsoft.Extensions.Configuration.EnvironmentVariables
+                    .Build();
 
-//IConfigurationRoot configuration = new ConfigurationBuilder()
-//                 .SetBasePath(envName)
-//                 .AddJsonFile("appsettings.json", optional: false)
-//                 .AddJsonFile($"appsettings.{envName}.json", optional: true)
-//                 .Build();
 
 var authenticationSettings = new AuthenticationSettings();
 configuration.GetSection("Authentication").Bind(authenticationSettings);

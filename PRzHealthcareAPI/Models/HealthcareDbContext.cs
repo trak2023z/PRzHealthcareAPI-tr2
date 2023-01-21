@@ -5,7 +5,9 @@ namespace PRzHealthcareAPI.Models
 {
     public class HealthcareDbContext : DbContext
     {
-        private string _connectionString = $@"Server=DESKTOP-TKR85BK;User Id=sa;Password=Mateusz1;Database=PRzHealthcare;Trusted_Connection=True;Trust Server Certificate=true";
+        //KOMPUTEREK\PC
+        //DESKTOP-TKR85BK
+        private string _connectionString = $@"Server=KOMPUTEREK\PC;User Id=sa;Password=Mateusz1;Database=PRzHealthcare;Trusted_Connection=True;Trust Server Certificate=true";
         public DbSet<Account> Accounts { get; set; }
         public DbSet<AccountType> AccountTypes { get; set; }
         public DbSet<BinData> BinData { get; set; }
