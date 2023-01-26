@@ -9,6 +9,7 @@ using PRzHealthcareAPI.Models.DTO;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace PRzHealthcareAPI.Services
@@ -17,7 +18,8 @@ namespace PRzHealthcareAPI.Services
     {
         void ChangePassword(LoginUserDto dto);
         LoginUserDto? GenerateToken(LoginUserDto dto);
-        void Register(RegisterUserDto dto);
+        Task<string> Register(RegisterUserDto dto);
+        Task<string> ConfirmMail(string hashcode);
     }
 
     public class UserService : IUserService
@@ -33,42 +35,52 @@ namespace PRzHealthcareAPI.Services
             this._passwordHasher = passwordHasher;
         }
 
-        public void Register(RegisterUserDto dto)
+        public async Task<string> Register(RegisterUserDto dto)
         {
-            var newUser = new Account()
+            try
             {
-                Acc_Id = dto.Id,
-                Acc_AtyId = dto.AtyId,
-                Acc_Login = dto.Login,
-                Acc_Firstname = dto.Firstname,
-                Acc_Secondname = dto.Secondname,
-                Acc_Lastname = dto.Lastname,
-                Acc_DateOfBirth = dto.DateOfBirth,
-                Acc_Pesel = dto.Pesel,
-                Acc_Email = dto.Email,
-                Acc_ContactNumber = dto.ContactNumber,
-                Acc_IsActive = true,
-                Acc_InsertedDate = DateTime.Now,
-                Acc_ModifiedDate = DateTime.Now,
-            };
-            var newPhoto = new BinData()
+                var newUser = new Account()
+                {
+                    Acc_Id = dto.Id,
+                    Acc_AtyId = _dbContext.AccountTypes.FirstOrDefault(x => x.Aty_Name == "Niezarejestrowany").Aty_Id, //dto.AtyId | 1002
+                    Acc_Login = dto.Login,
+                    Acc_Firstname = dto.Firstname,
+                    Acc_Secondname = dto.Secondname,
+                    Acc_Lastname = dto.Lastname,
+                    Acc_DateOfBirth = dto.DateOfBirth,
+                    Acc_Pesel = dto.Pesel,
+                    Acc_Email = dto.Email,
+                    Acc_ContactNumber = dto.ContactNumber,
+                    Acc_IsActive = true,
+                    Acc_InsertedDate = DateTime.Now,
+                    Acc_ModifiedDate = DateTime.Now,
+                    Acc_RegistrationHash = CreateRandomToken()
+                };
+                var newPhoto = new BinData()
+                {
+                    Bin_Name = $@"{newUser.Acc_Login}_Photo",
+                    Bin_Data = dto.PhotoBinary,
+                    Bin_InsertedAccId = 0,
+                    Bin_InsertedDate = DateTime.Now,
+                    Bin_ModifiedAccId = 0,
+                    Bin_ModifiedDate = DateTime.Now,
+
+                };
+
+                _dbContext.BinData.Add(newPhoto);
+
+                newUser.Acc_PhotoId = newPhoto.Bin_Id;
+                newUser.Acc_Password = _passwordHasher.HashPassword(newUser, dto.Password);
+                _dbContext.Accounts.Add(newUser);
+                await _dbContext.SaveChangesAsync();
+
+                Tools.SendRegistrationMail(newUser, _dbContext.NotificationTypes.FirstOrDefault(x => x.Nty_Name == "Rejestracja użytkownika w systemie PRz Healthcare"));
+                return "";
+            }
+            catch (Exception ex)
             {
-                Bin_Name = $@"{newUser.Acc_Login}_Photo",
-                Bin_Data = dto.PhotoBinary,
-                Bin_InsertedAccId = 0,
-                Bin_InsertedDate = DateTime.Now,
-                Bin_ModifiedAccId = 0,
-                Bin_ModifiedDate = DateTime.Now,
-
-            };
-
-            _dbContext.BinData.Add(newPhoto);
-            _dbContext.SaveChanges();
-
-            newUser.Acc_PhotoId = newPhoto.Bin_Id;
-            newUser.Acc_Password = _passwordHasher.HashPassword(newUser, dto.Password);
-            _dbContext.Accounts.Add(newUser);
-            _dbContext.SaveChanges();
+                throw new BadRequestException(ex.Message);
+            }
         }
 
         public LoginUserDto? GenerateToken(LoginUserDto dto)
@@ -112,6 +124,31 @@ namespace PRzHealthcareAPI.Services
 
             return loginUser;
         }
+        public async Task<string> ConfirmMail(string hashcode)
+        {
+            try
+            {
+                if (String.IsNullOrWhiteSpace(hashcode))
+                {
+                    throw new NotFoundException("Błędny kod.");
+                }
+
+                var user = _dbContext.Accounts.FirstOrDefault(x => x.Acc_ReminderHash == hashcode);
+                if (user == null)
+                {
+                    throw new NotFoundException("Błędny kod.");
+                }
+
+                user.Acc_AtyId = 1;
+                await _dbContext.SaveChangesAsync();
+                return "";
+            }
+            catch (Exception ex)
+            {
+                return ex.Message;
+            }
+        }
+
         public void ChangePassword(LoginUserDto dto)
         {
             var user = _dbContext.Accounts.FirstOrDefault(x => x.Acc_Login == dto.Login);
@@ -126,6 +163,9 @@ namespace PRzHealthcareAPI.Services
             _dbContext.Accounts.Update(user);
             _dbContext.SaveChanges();
         }
-
+        private string CreateRandomToken()
+        {
+            return Convert.ToHexString(RandomNumberGenerator.GetBytes(64));
+        }
     }
 }

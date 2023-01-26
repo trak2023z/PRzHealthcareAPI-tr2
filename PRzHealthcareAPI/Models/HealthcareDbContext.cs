@@ -33,6 +33,9 @@ namespace PRzHealthcareAPI.Models
             modelBuilder.Entity<Account>().Property(x => x.Acc_IsActive).IsRequired();
             modelBuilder.Entity<Account>().Property(x => x.Acc_InsertedDate).IsRequired().HasColumnType("datetime");
             modelBuilder.Entity<Account>().Property(x => x.Acc_ModifiedDate).IsRequired().HasColumnType("datetime");
+            modelBuilder.Entity<Account>().Property(x => x.Acc_ReminderExpire).HasColumnType("datetime");
+            modelBuilder.Entity<Account>().Property(x => x.Acc_RegistrationHash).HasMaxLength(255);
+            modelBuilder.Entity<Account>().Property(x => x.Acc_ReminderHash).HasMaxLength(255);
 
             modelBuilder.Entity<AccountType>().HasKey(x => x.Aty_Id);
             modelBuilder.Entity<AccountType>().Property(x => x.Aty_Name).IsRequired().HasMaxLength(255);

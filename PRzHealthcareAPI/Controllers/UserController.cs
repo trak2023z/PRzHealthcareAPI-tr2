@@ -19,9 +19,9 @@ namespace PRzHealthcareAPI.Controllers
         }
 
         [HttpPost("register")]
-        public ActionResult Register([FromBody] RegisterUserDto dto)
+        public async Task<IActionResult> Register([FromBody] RegisterUserDto dto)
         {
-            _userService.Register(dto);
+            await _userService.Register(dto);
             return Ok();
         }
         [HttpPost("login")]
@@ -29,6 +29,14 @@ namespace PRzHealthcareAPI.Controllers
         {
             var loggedUser = _userService.GenerateToken(dto);
             return Ok(loggedUser);
+        }
+
+        [AllowAnonymous]
+        [HttpPatch("confirm-mail")]
+        public async Task<IActionResult> ConfirmMail([FromQuery]  string hashCode)
+        {
+            var message = await _userService.ConfirmMail(hashCode);
+            return Ok(message);
         }
 
         [HttpPost("changepassword")]

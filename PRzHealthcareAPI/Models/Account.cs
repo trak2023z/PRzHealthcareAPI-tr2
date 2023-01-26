@@ -21,6 +21,9 @@ namespace PRzHealthcareAPI.Models
         public bool Acc_IsActive { get; set; }
         public DateTime Acc_InsertedDate { get; set; }
         public DateTime Acc_ModifiedDate { get; set; }
+        public string? Acc_RegistrationHash { get; set; }
+        public string? Acc_ReminderHash { get; set; }
+        public DateTime? Acc_ReminderExpire { get; set; }
 
         public virtual AccountType AccountType { get; set; }
     }

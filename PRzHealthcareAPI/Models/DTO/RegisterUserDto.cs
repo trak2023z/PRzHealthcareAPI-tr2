@@ -19,5 +19,6 @@ namespace PRzHealthcareAPI.Models.DTO
         public bool IsActive { get; set; }
         public DateTime InsertedDate { get; set; }
         public DateTime ModifiedDate { get; set; }
+        public string RegistrationHash { get; set; }
     }
 }
