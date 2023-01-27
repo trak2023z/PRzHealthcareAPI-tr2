@@ -117,8 +117,8 @@ namespace PRzHealthcareAPI.Services
             LoginUserDto loginUser = new LoginUserDto()
             {
                 Login = dto.Login,
-                Name = _dbContext.Accounts.FirstOrDefault(x => x.Acc_Login == dto.Login).Acc_Firstname,
-                AtyId = _dbContext.Accounts.FirstOrDefault(x => x.Acc_Login == dto.Login).Acc_AtyId,
+                Name = user.Acc_Firstname,
+                AtyId = user.Acc_AtyId,
                 Token = tokenHandler.WriteToken(token)
             };
 

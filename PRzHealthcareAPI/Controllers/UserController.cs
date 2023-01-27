@@ -32,7 +32,7 @@ namespace PRzHealthcareAPI.Controllers
         }
 
         [AllowAnonymous]
-        [HttpPatch("confirm-mail")]
+        [HttpGet("confirm-mail")]
         public async Task<IActionResult> ConfirmMail([FromQuery]  string hashCode)
         {
             var message = await _userService.ConfirmMail(hashCode);
