@@ -27,51 +27,66 @@ namespace PRzHealthcareAPI.Services
         private readonly HealthcareDbContext _dbContext;
         private readonly AuthenticationSettings _authentication;
         private readonly IPasswordHasher<Account> _passwordHasher;
+        private readonly IMapper _mapper;
 
-        public UserService(HealthcareDbContext dbContext, AuthenticationSettings authentication, IPasswordHasher<Account> passwordHasher)
+        public UserService(HealthcareDbContext dbContext, AuthenticationSettings authentication, IPasswordHasher<Account> passwordHasher, IMapper mapper)
         {
             this._dbContext = dbContext;
             this._authentication = authentication;
             this._passwordHasher = passwordHasher;
+            this._mapper = mapper;
         }
 
         public async Task<string> Register(RegisterUserDto dto)
         {
+            var loginExists = _dbContext.Accounts.Any(x => x.Acc_Login == dto.Login || x.Acc_Email == dto.Email || x.Acc_Pesel == dto.Pesel);
+            //if(loginExists)
+            //{
+            //    throw new BadRequestException("Konto o tym loginie, adresie e-mail lub peselu już istnieje.");
+            //}
+
             try
             {
-                var newUser = new Account()
-                {
-                    Acc_Id = dto.Id,
-                    Acc_AtyId = _dbContext.AccountTypes.FirstOrDefault(x => x.Aty_Name == "Niezarejestrowany").Aty_Id, //dto.AtyId | 1002
-                    Acc_Login = dto.Login,
-                    Acc_Firstname = dto.Firstname,
-                    Acc_Secondname = dto.Secondname,
-                    Acc_Lastname = dto.Lastname,
-                    Acc_DateOfBirth = dto.DateOfBirth,
-                    Acc_Pesel = dto.Pesel,
-                    Acc_Email = dto.Email,
-                    Acc_ContactNumber = dto.ContactNumber,
-                    Acc_IsActive = true,
-                    Acc_InsertedDate = DateTime.Now,
-                    Acc_ModifiedDate = DateTime.Now,
-                    Acc_RegistrationHash = CreateRandomToken()
-                };
                 var newPhoto = new BinData()
                 {
-                    Bin_Name = $@"{newUser.Acc_Login}_Photo",
-                    Bin_Data = dto.PhotoBinary,
+                    Bin_Name = $@"{dto.Login}_Photo",
+                    Bin_Data = dto.PhotoBinary is null? "" : dto.PhotoBinary,
                     Bin_InsertedAccId = 0,
                     Bin_InsertedDate = DateTime.Now,
                     Bin_ModifiedAccId = 0,
                     Bin_ModifiedDate = DateTime.Now,
-
                 };
 
                 _dbContext.BinData.Add(newPhoto);
 
+                var newUser = _mapper.Map<Account>(dto);
+                newUser.Acc_RegistrationHash = CreateRandomToken();
+                newUser.Acc_InsertedDate = DateTime.Now;
+                newUser.Acc_ModifiedDate = DateTime.Now;
+                newUser.Acc_IsActive = true;
                 newUser.Acc_PhotoId = newPhoto.Bin_Id;
                 newUser.Acc_Password = _passwordHasher.HashPassword(newUser, dto.Password);
+                newUser.Acc_AtyId = _dbContext.AccountTypes.FirstOrDefault(x => x.Aty_Name == "Niezarejestrowany").Aty_Id;
                 _dbContext.Accounts.Add(newUser);
+
+                //var newUser = new Account()
+                //{
+                //    Acc_Id = dto.Id,
+                //    Acc_AtyId = _dbContext.AccountTypes.FirstOrDefault(x => x.Aty_Name == "Niezarejestrowany").Aty_Id, //dto.AtyId | 1002
+                //    Acc_Login = dto.Login,
+                //    Acc_Firstname = dto.Firstname,
+                //    Acc_Secondname = dto.Secondname,
+                //    Acc_Lastname = dto.Lastname,
+                //    Acc_DateOfBirth = dto.DateOfBirth,
+                //    Acc_Pesel = dto.Pesel,
+                //    Acc_Email = dto.Email,
+                //    Acc_ContactNumber = dto.ContactNumber,
+                //    Acc_IsActive = true,
+                //    Acc_InsertedDate = DateTime.Now,
+                //    Acc_ModifiedDate = DateTime.Now,
+                //    Acc_RegistrationHash = CreateRandomToken()
+                //};
+
                 await _dbContext.SaveChangesAsync();
 
                 Tools.SendRegistrationMail(newUser, _dbContext.NotificationTypes.FirstOrDefault(x => x.Nty_Name == "Rejestracja użytkownika w systemie PRz Healthcare"));
@@ -97,6 +112,12 @@ namespace PRzHealthcareAPI.Services
             if (_passwordHasher.VerifyHashedPassword(user, user.Acc_Password, dto.Password) == PasswordVerificationResult.Failed)
             {
                 throw new BadRequestException("Błędny login lub hasło.");
+            }
+
+            /*  Niezarejestrowany   */
+            if (user.AccountType.Aty_Name == "Niezarejestrowany")
+            {
+                throw new BadRequestException("Twoje konto nie zostało wciąż potwierdzone.");
             }
 
             var claims = new List<Claim>()
@@ -133,7 +154,7 @@ namespace PRzHealthcareAPI.Services
                     throw new NotFoundException("Błędny kod.");
                 }
 
-                var user = _dbContext.Accounts.FirstOrDefault(x => x.Acc_ReminderHash == hashcode);
+                var user = _dbContext.Accounts.FirstOrDefault(x => x.Acc_RegistrationHash == hashcode);
                 if (user == null)
                 {
                     throw new NotFoundException("Błędny kod.");
@@ -141,7 +162,7 @@ namespace PRzHealthcareAPI.Services
 
                 user.Acc_AtyId = 1;
                 await _dbContext.SaveChangesAsync();
-                return "";
+                return "Ok";
             }
             catch (Exception ex)
             {

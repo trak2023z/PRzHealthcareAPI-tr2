@@ -9,14 +9,14 @@ namespace PRzHealthcareAPI.Helpers
         {
             try
             {
-                string senderEmail = "przhealthcare@vp.pl";
-                string passwordEmail = "Politechnika123!";
+                string senderEmail = "noreply@arcussoft.com.pl";
+                string passwordEmail = "Guf26409";
 
                 MailMessage objeto_mail = new MailMessage();
                 SmtpClient client = new SmtpClient
                 {
-                    Port = 465,
-                    Host = "smtp.poczta.onet.pl",
+                    Port = 587,
+                    Host = "smtp.office365.com",
                     Timeout = 10000,
                     DeliveryMethod = SmtpDeliveryMethod.Network,
                     UseDefaultCredentials = false,
@@ -26,11 +26,11 @@ namespace PRzHealthcareAPI.Helpers
                 objeto_mail.From = new MailAddress(senderEmail);
                 objeto_mail.To.Add(new MailAddress(user.Acc_Email));
 
-                objeto_mail.Priority = MailPriority.High;
+                //objeto_mail.Priority = MailPriority.High;
 
                 objeto_mail.Subject = notification.Nty_Name;
                 objeto_mail.IsBodyHtml = true;
-                objeto_mail.Body = notification.Nty_Template.Replace("@@NAZWA", $@"{user.Acc_Firstname} {user.Acc_Lastname}").Replace("@@LINK", $@"http://192.168.56.1:5000/account/confirm-mail/{user.Acc_RegistrationHash}");
+                objeto_mail.Body = notification.Nty_Template.Replace("@@NAZWA", $@"{user.Acc_Firstname} {user.Acc_Lastname}").Replace("@@LINK", $@"http://192.168.56.1:5000/account/confirm-mail?hashCode={user.Acc_RegistrationHash}");
 
                 client.Send(objeto_mail);
 
