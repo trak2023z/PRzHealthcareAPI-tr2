@@ -20,6 +20,7 @@ namespace PRzHealthcareAPI.Services
         LoginUserDto? GenerateToken(LoginUserDto dto);
         Task<string> Register(RegisterUserDto dto);
         Task<string> ConfirmMail(string hashcode);
+        List<UserDto> GetDoctorsList();
     }
 
     public class UserService : IUserService
@@ -40,10 +41,10 @@ namespace PRzHealthcareAPI.Services
         public async Task<string> Register(RegisterUserDto dto)
         {
             var loginExists = _dbContext.Accounts.Any(x => x.Acc_Login == dto.Login || x.Acc_Email == dto.Email || x.Acc_Pesel == dto.Pesel);
-            //if(loginExists)
-            //{
-            //    throw new BadRequestException("Konto o tym loginie, adresie e-mail lub peselu już istnieje.");
-            //}
+            if (loginExists)
+            {
+                throw new BadRequestException("Konto o tym loginie, adresie e-mail lub peselu już istnieje.");
+            }
 
             try
             {
@@ -68,24 +69,6 @@ namespace PRzHealthcareAPI.Services
                 newUser.Acc_Password = _passwordHasher.HashPassword(newUser, dto.Password);
                 newUser.Acc_AtyId = _dbContext.AccountTypes.FirstOrDefault(x => x.Aty_Name == "Niezarejestrowany").Aty_Id;
                 _dbContext.Accounts.Add(newUser);
-
-                //var newUser = new Account()
-                //{
-                //    Acc_Id = dto.Id,
-                //    Acc_AtyId = _dbContext.AccountTypes.FirstOrDefault(x => x.Aty_Name == "Niezarejestrowany").Aty_Id, //dto.AtyId | 1002
-                //    Acc_Login = dto.Login,
-                //    Acc_Firstname = dto.Firstname,
-                //    Acc_Secondname = dto.Secondname,
-                //    Acc_Lastname = dto.Lastname,
-                //    Acc_DateOfBirth = dto.DateOfBirth,
-                //    Acc_Pesel = dto.Pesel,
-                //    Acc_Email = dto.Email,
-                //    Acc_ContactNumber = dto.ContactNumber,
-                //    Acc_IsActive = true,
-                //    Acc_InsertedDate = DateTime.Now,
-                //    Acc_ModifiedDate = DateTime.Now,
-                //    Acc_RegistrationHash = CreateRandomToken()
-                //};
 
                 await _dbContext.SaveChangesAsync();
 
@@ -145,6 +128,24 @@ namespace PRzHealthcareAPI.Services
 
             return loginUser;
         }
+
+        public List<UserDto> GetDoctorsList()
+        {
+            var list = _dbContext.Accounts.Where(x => x.Acc_AtyId == 3).ToList();
+            if(list is null)
+            {
+                return new List<UserDto>();
+            }
+
+            List<UserDto> listUserDto = new List<UserDto>();
+
+            foreach (var account in list)
+            {
+                listUserDto.Add(_mapper.Map<UserDto>(account));
+            }
+
+            return listUserDto;
+        }
         public async Task<string> ConfirmMail(string hashcode)
         {
             try
@@ -169,7 +170,6 @@ namespace PRzHealthcareAPI.Services
                 return ex.Message;
             }
         }
-
         public void ChangePassword(LoginUserDto dto)
         {
             var user = _dbContext.Accounts.FirstOrDefault(x => x.Acc_Login == dto.Login);

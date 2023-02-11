@@ -31,7 +31,14 @@ namespace PRzHealthcareAPI.Controllers
             return Ok(loggedUser);
         }
 
-        [AllowAnonymous]
+        [HttpGet("getdoctorslist")]
+        //todo: [Authorize]
+        public ActionResult GetDoctorsList()
+        {
+            var doctors = _userService.GetDoctorsList();
+            return Ok(doctors);
+        }
+
         [HttpGet("confirm-mail")]
         public async Task<IActionResult> ConfirmMail([FromQuery] string hashCode)
         {

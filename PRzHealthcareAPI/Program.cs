@@ -51,6 +51,8 @@ builder.Services.AddControllers().AddFluentValidation().AddJsonOptions(x => { x.
 /*  Services    */
 //todo: services
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IVaccinationService, VaccinationService>();
+
 builder.Services.AddScoped<IPasswordHasher<Account>, PasswordHasher<Account>>();
 builder.Services.AddDbContext<HealthcareDbContext>();
 builder.Services.AddScoped<RequestTimeMiddleware>();
