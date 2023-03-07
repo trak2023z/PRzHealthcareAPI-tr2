@@ -16,7 +16,7 @@ namespace PRzHealthcareAPI.Models
         public DbSet<Notification> Notifications { get; set; }
         public DbSet<NotificationType> NotificationTypes { get; set; }
         public DbSet<Vaccination> Vaccinations { get; set; }
-
+        public DbSet<EventType> EventTypes { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -94,6 +94,9 @@ namespace PRzHealthcareAPI.Models
             modelBuilder.Entity<Vaccination>().Property(x => x.Vac_InsertedAccId).IsRequired();
             modelBuilder.Entity<Vaccination>().Property(x => x.Vac_ModifiedAccId).IsRequired();
             modelBuilder.Entity<Vaccination>().Property(x => x.Vac_ModifiedDate).IsRequired().HasColumnType("datetime");
+
+            modelBuilder.Entity<EventType>().HasKey(x => x.Ety_Id);
+            modelBuilder.Entity<EventType>().Property(x => x.Ety_Name).IsRequired().HasMaxLength(127);
 
         }
 

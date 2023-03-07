@@ -46,6 +46,21 @@ namespace PRzHealthcareAPI
                  .ForMember(m => m.InsertedAccId, c => c.MapFrom(s => s.Vac_InsertedAccId))
                  .ForMember(m => m.ModifiedDate, c => c.MapFrom(s => s.Vac_ModifiedDate))
                  .ForMember(m => m.ModifiedAccId, c => c.MapFrom(s => s.Vac_ModifiedAccId));
+
+            CreateMap<Event, EventDto>()
+                .ForMember(m => m.Id, c => c.MapFrom(s => s.Eve_Id))
+                 .ForMember(m => m.AccId, c => c.MapFrom(s => s.Eve_AccId))
+                 .ForMember(m => m.TimeFrom, c => c.MapFrom(s => s.Eve_TimeFrom))
+                 .ForMember(m => m.TimeTo, c => c.MapFrom(s => s.Eve_TimeTo))
+                 .ForMember(m => m.Type, c => c.MapFrom(s => s.Eve_Type))
+                 .ForMember(m => m.DoctorId, c => c.MapFrom(s => s.Eve_DoctorId))
+                 .ForMember(m => m.VacId, c => c.MapFrom(s => s.Eve_VacId))
+                 .ForMember(m => m.Description, c => c.MapFrom(s => s.Eve_Description))
+                 .ForMember(m => m.IsActive, c => c.MapFrom(s => s.Eve_IsActive))
+                 .ForMember(m => m.InsertedDate, c => c.MapFrom(s => s.Eve_InsertedDate))
+                 .ForMember(m => m.InsertedAccId, c => c.MapFrom(s => s.Eve_InsertedAccId))
+                 .ForMember(m => m.ModifiedDate, c => c.MapFrom(s => s.Eve_ModifiedDate))
+                 .ForMember(m => m.ModifiedAccId, c => c.MapFrom(s => s.Eve_ModifiedAccId));
         }
     }
 }

@@ -9,6 +9,7 @@ namespace PRzHealthcareAPI.Models
         public int Eve_AccId { get; set; }  
         public DateTime Eve_TimeFrom { get; set; }
         public DateTime Eve_TimeTo { get; set; }
+        [ForeignKey("EventType")]
         public int Eve_Type { get; set; }
         public int Eve_DoctorId { get; set; }
         [ForeignKey("Vaccination")]

@@ -21,5 +21,12 @@ namespace PRzHealthcareAPI.Controllers
             _eventService.SeedOffDates();
             return Ok();
         }
-    }
+
+        [HttpGet("getavailabledates")]
+        public ActionResult GetAvailableDates(int doctorId)
+        {
+            var availableEvents = _eventService.GetAvailableDates(doctorId);
+            return Ok(availableEvents);
+        }
+     }
 }
