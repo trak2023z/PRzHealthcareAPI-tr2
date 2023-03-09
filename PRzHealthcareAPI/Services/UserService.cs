@@ -120,6 +120,7 @@ namespace PRzHealthcareAPI.Services
 
             LoginUserDto loginUser = new LoginUserDto()
             {
+                AccId = user.Acc_Id,
                 Login = dto.Login,
                 Name = user.Acc_Firstname,
                 AtyId = user.Acc_AtyId,
