@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using NLog;
 using NLog.Fluent;
 using PRzHealthcareAPI.Exceptions;
@@ -14,6 +15,10 @@ namespace PRzHealthcareAPI.Services
         bool SeedDates();
         List<EventDto> GetAvailableDates(string selectedDate, string selectedDoctorId);
         List<EventDto> GetUserEvents(int accountId);
+        List<EventDto> GetDoctorEvents(int accountId);
+        List<EventDto> GetNurseEvents();
+        void TakeTerm(EventDto dto, string accountId);
+        void CancelTerm(int eventId, string accountId);
     }
     public class EventService : IEventService
     {
@@ -61,6 +66,88 @@ namespace PRzHealthcareAPI.Services
             return eventDtos;
 
         }
+        public List<EventDto> GetDoctorEvents(int accountId)
+        {
+            var events = _dbContext.Events.Where(x => x.Eve_DoctorId == accountId && x.Eve_Type == 2).ToList();
+
+            List<EventDto> eventDtos = new List<EventDto>();
+
+            foreach (var ev in events)
+            {
+                var eventDto = _mapper.Map<EventDto>(ev);
+                eventDtos.Add(eventDto);
+            }
+            return eventDtos;
+
+        }
+        public List<EventDto> GetNurseEvents()
+        {
+            var events = _dbContext.Events.Where(x => x.Eve_Type == 2 && x.Eve_Type == 3).ToList();
+
+            List<EventDto> eventDtos = new List<EventDto>();
+
+            foreach (var ev in events)
+            {
+                var eventDto = _mapper.Map<EventDto>(ev);
+                eventDtos.Add(eventDto);
+            }
+            return eventDtos;
+
+        }
+
+        public void TakeTerm(EventDto dto, string accountId)
+        {
+            var changedEvent = _dbContext.Events.FirstOrDefault(x => x.Eve_Id == dto.Id);
+            if (changedEvent == null)
+            {
+                throw new NotFoundException("Nie znaleziono odpowiedniego terminu.");
+            }
+            var user = _dbContext.Accounts.FirstOrDefault(x => x.Acc_Id.ToString() == accountId);
+            if (user == null)
+            {
+                throw new NotFoundException("Nie znaleziono użytkownika.");
+            }
+
+            changedEvent.Eve_AccId = dto.AccId;
+            changedEvent.Eve_Type = 2;
+            changedEvent.Eve_DoctorId = dto.DoctorId;
+            changedEvent.Eve_VacId = dto.VacId;
+            changedEvent.Eve_Description = dto.Description;
+            changedEvent.Eve_ModifiedAccId = user.Acc_Id;
+            changedEvent.Eve_ModifiedDate = DateTime.Now;
+            changedEvent.Eve_InsertedDate = DateTime.Now;
+            changedEvent.Eve_InsertedAccId = user.Acc_Id;
+
+            _dbContext.Update(changedEvent);
+            _dbContext.SaveChangesAsync();
+
+        }
+
+        public void CancelTerm(int eventId, string accountId)
+        {
+            var canceledEvent = _dbContext.Events.FirstOrDefault(x => x.Eve_Id == eventId);
+            if(canceledEvent == null) 
+            {
+                throw new NotFoundException("Wydarzenie nie istnieje.");
+            }
+            var user = _dbContext.Accounts.FirstOrDefault(x => x.Acc_Id.ToString() == accountId);
+            if (user == null)
+            {
+                throw new NotFoundException("Nie znaleziono użytkownika.");
+            }
+
+            canceledEvent.Eve_AccId = 1;
+            canceledEvent.Eve_Description = "Dostępny";
+            canceledEvent.Eve_ModifiedAccId = user.Acc_Id;
+            canceledEvent.Eve_ModifiedDate = DateTime.Now;
+            canceledEvent.Eve_InsertedDate = DateTime.Now;
+            canceledEvent.Eve_InsertedAccId = user.Acc_Id;
+            canceledEvent.Eve_VacId = 2;
+
+            _dbContext.Update(canceledEvent);
+            _dbContext.SaveChangesAsync();
+        }
+
         public bool SeedDates()
         {
             var calendar = new PolandPublicHoliday();

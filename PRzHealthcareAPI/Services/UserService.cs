@@ -108,6 +108,7 @@ namespace PRzHealthcareAPI.Services
                 new Claim(ClaimTypes.NameIdentifier, user.Acc_Login.ToString()),
                 new Claim(ClaimTypes.Name, $@"{user.Acc_Firstname} {user.Acc_Lastname}"),
                 new Claim(ClaimTypes.Role, user.AccountType.Aty_Name.ToString()),
+                new Claim(ClaimTypes.SerialNumber, user.Acc_Id.ToString()),
             };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_authentication.JwtKey));

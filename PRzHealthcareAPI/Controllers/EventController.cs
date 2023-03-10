@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using PRzHealthcareAPI.Models.DTO;
 using PRzHealthcareAPI.Services;
+using System.Security.Claims;
 
 namespace PRzHealthcareAPI.Controllers
 {
@@ -34,6 +35,33 @@ namespace PRzHealthcareAPI.Controllers
         {
             var availableEvents = _eventService.GetUserEvents(accountId);
             return Ok(availableEvents);
+        }
+
+        [HttpGet("getdoctorevents")]
+        public ActionResult GetDoctorEvents([FromQuery] int accountId)
+        {
+            var availableEvents = _eventService.GetDoctorEvents(accountId);
+            return Ok(availableEvents);
+        }
+
+        [HttpGet("getnurseevents")]
+        public ActionResult GetNurseEvents()
+        {
+            var availableEvents = _eventService.GetNurseEvents();
+            return Ok(availableEvents);
+        }
+
+        [HttpPost("newevent")]
+        public ActionResult TakeTerm(EventDto dto)
+        {
+            string accountId = "";
+            if (HttpContext.User.Identity is ClaimsIdentity identity)
+            {
+                accountId = identity.FindFirst(ClaimTypes.SerialNumber).Value;
+            }
+
+            _eventService.TakeTerm(dto, login);
+            return Ok();
         }
     }
 }
