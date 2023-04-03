@@ -2,11 +2,13 @@
 using Microsoft.AspNetCore.Mvc;
 using PRzHealthcareAPI.Models.DTO;
 using PRzHealthcareAPI.Services;
+using System.Security.Claims;
 
 namespace PRzHealthcareAPI.Controllers
 {
     [Route("account")]
     [ApiController]
+    [Authorize]
 
     public class UserController : ControllerBase
     {
@@ -18,12 +20,15 @@ namespace PRzHealthcareAPI.Controllers
             this._userService = userService;
         }
 
+        [AllowAnonymous]
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterUserDto dto)
         {
             await _userService.Register(dto);
             return Ok();
         }
+
+        [AllowAnonymous]
         [HttpPost("login")]
         public ActionResult Login([FromBody] LoginUserDto dto)
         {
@@ -39,6 +44,7 @@ namespace PRzHealthcareAPI.Controllers
             return Ok(doctors);
         }
 
+        [AllowAnonymous]
         [HttpGet("confirm-mail")]
         public async Task<IActionResult> ConfirmMail([FromQuery] string hashCode)
         {
@@ -46,10 +52,14 @@ namespace PRzHealthcareAPI.Controllers
             return Ok(message);
         }
 
-        [HttpPost("changepassword")]
+        [HttpPut("changepassword")]
         [Authorize]
-        public ActionResult ChangePassword([FromBody] LoginUserDto dto)
+        public ActionResult ChangePassword([FromBody] ChangeUserPasswordDto dto)
         {
+            if (HttpContext.User.Identity is ClaimsIdentity identity)
+            {
+                dto.Login = identity.FindFirst(ClaimTypes.NameIdentifier).Value;
+            }
             _userService.ChangePassword(dto);
             return Ok();
         }

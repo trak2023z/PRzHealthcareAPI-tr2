@@ -54,7 +54,7 @@ namespace PRzHealthcareAPI.Services
 
         public List<EventDto> GetUserEvents(int accountId)
         {
-            var events = _dbContext.Events.Where(x => x.Eve_AccId == accountId && x.Eve_Type == 2).ToList();
+            var events = _dbContext.Events.Where(x => x.Eve_AccId == accountId && x.Eve_Type == 2 && x.Eve_TimeTo > DateTime.Now).ToList();
 
             List<EventDto> eventDtos = new List<EventDto>();
 

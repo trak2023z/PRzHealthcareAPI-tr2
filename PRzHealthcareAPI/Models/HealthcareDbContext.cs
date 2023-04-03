@@ -69,6 +69,7 @@ namespace PRzHealthcareAPI.Models
             modelBuilder.Entity<Event>().Property(x => x.Eve_InsertedAccId).IsRequired();
             modelBuilder.Entity<Event>().Property(x => x.Eve_ModifiedAccId).IsRequired();
             modelBuilder.Entity<Event>().Property(x => x.Eve_ModifiedDate).IsRequired().HasColumnType("datetime");
+            modelBuilder.Entity<Event>().Property(x => x.Eve_SerialNumber).HasMaxLength(23);
 
             modelBuilder.Entity<Notification>().HasKey(x => x.Not_Id);
             modelBuilder.Entity<Notification>().Property(x => x.Not_EveId).IsRequired();

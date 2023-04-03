@@ -16,7 +16,7 @@ namespace PRzHealthcareAPI.Services
 {
     public interface IUserService
     {
-        void ChangePassword(LoginUserDto dto);
+        void ChangePassword(ChangeUserPasswordDto dto);
         LoginUserDto? GenerateToken(LoginUserDto dto);
         Task<string> Register(RegisterUserDto dto);
         Task<string> ConfirmMail(string hashcode);
@@ -172,7 +172,7 @@ namespace PRzHealthcareAPI.Services
                 return ex.Message;
             }
         }
-        public void ChangePassword(LoginUserDto dto)
+        public void ChangePassword(ChangeUserPasswordDto dto)
         {
             var user = _dbContext.Accounts.FirstOrDefault(x => x.Acc_Login == dto.Login);
 
@@ -181,7 +181,17 @@ namespace PRzHealthcareAPI.Services
                 throw new NotFoundException("Użytkownik nie istnieje.");
             }
 
-            user.Acc_Password = _passwordHasher.HashPassword(user, dto.Password);
+            if (_passwordHasher.VerifyHashedPassword(user, user.Acc_Password, dto.OldPassword) == PasswordVerificationResult.Failed)
+            {
+                throw new BadRequestException("Podane hasło jest nieprawidłowe.");
+            }
+
+            if (dto.NewPassword != dto.NewPasswordRepeat)
+            {
+                throw new BadRequestException("Hasła są niezgodne.");
+            }
+
+            user.Acc_Password = _passwordHasher.HashPassword(user, dto.NewPassword);
 
             _dbContext.Accounts.Update(user);
             _dbContext.SaveChanges();

@@ -10,6 +10,8 @@
     <PackageReference Include="AutoMapper" Version="12.0.0" />
     <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.0" />
     <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
+    <PackageReference Include="BoldReports.AspNet.Core" Version="4.2.85" />
+    <PackageReference Include="BoldReports.Net.Core" Version="4.2.85" />
     <PackageReference Include="FluentValidation" Version="11.4.0" />
     <PackageReference Include="FluentValidation.AspNetCore" Version="11.2.2" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.12" />

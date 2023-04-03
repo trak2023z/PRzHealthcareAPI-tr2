@@ -20,6 +20,7 @@ namespace PRzHealthcareAPI.Models
         public int Eve_InsertedAccId { get; set; }
         public DateTime Eve_ModifiedDate { get; set; }
         public int Eve_ModifiedAccId { get; set; }
+        public string? Eve_SerialNumber { get; set; }
 
         public virtual Account Account { get; set; }
         public virtual Vaccination Vaccination { get; set; }

@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using PRzHealthcareAPI.Helpers;
 using PRzHealthcareAPI.Models.DTO;
 using PRzHealthcareAPI.Services;
 using System.Security.Claims;
@@ -7,6 +9,8 @@ namespace PRzHealthcareAPI.Controllers
 {
     [Route("event")]
     [ApiController]
+    [Authorize]
+
     public class EventController : ControllerBase
     {
         private readonly IEventService _eventService;
@@ -60,7 +64,15 @@ namespace PRzHealthcareAPI.Controllers
                 accountId = identity.FindFirst(ClaimTypes.SerialNumber).Value;
             }
 
-            _eventService.TakeTerm(dto, login);
+            _eventService.TakeTerm(dto, accountId);
+            return Ok();
+        }
+
+        [HttpPatch("printcertificate")]
+        public ActionResult PrintCertificate()
+        {
+            BoldReportsApi.PrintPDF();
+
             return Ok();
         }
     }
