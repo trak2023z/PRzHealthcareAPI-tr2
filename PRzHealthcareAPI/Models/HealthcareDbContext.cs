@@ -58,11 +58,9 @@ namespace PRzHealthcareAPI.Models
             modelBuilder.Entity<Certificate>().Property(x => x.Cer_ModifiedDate).IsRequired().HasColumnType("datetime");
 
             modelBuilder.Entity<Event>().HasKey(x => x.Eve_Id);
-            modelBuilder.Entity<Event>().Property(x => x.Eve_AccId).IsRequired();
             modelBuilder.Entity<Event>().Property(x => x.Eve_TimeFrom).IsRequired();
             modelBuilder.Entity<Event>().Property(x => x.Eve_TimeTo).IsRequired();
             modelBuilder.Entity<Event>().Property(x => x.Eve_Type).IsRequired();
-            modelBuilder.Entity<Event>().Property(x => x.Eve_DoctorId).IsRequired();
             modelBuilder.Entity<Event>().Property(x => x.Eve_Description).HasMaxLength(255);
             modelBuilder.Entity<Event>().Property(x => x.Eve_IsActive).IsRequired();
             modelBuilder.Entity<Event>().Property(x => x.Eve_InsertedDate).IsRequired().HasColumnType("datetime");
@@ -88,7 +86,6 @@ namespace PRzHealthcareAPI.Models
             modelBuilder.Entity<Vaccination>().HasKey(x => x.Vac_Id);
             modelBuilder.Entity<Vaccination>().Property(x => x.Vac_Name).IsRequired().HasMaxLength(127);
             modelBuilder.Entity<Vaccination>().Property(x => x.Vac_Description).IsRequired().HasMaxLength(2047);
-            modelBuilder.Entity<Vaccination>().Property(x => x.Vac_PhotoId).IsRequired();
             modelBuilder.Entity<Vaccination>().Property(x => x.Vac_DaysBetweenVacs).IsRequired();
             modelBuilder.Entity<Vaccination>().Property(x => x.Vac_IsActive).IsRequired();
             modelBuilder.Entity<Vaccination>().Property(x => x.Vac_InsertedDate).IsRequired().HasColumnType("datetime");

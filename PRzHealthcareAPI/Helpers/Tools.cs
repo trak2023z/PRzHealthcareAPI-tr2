@@ -30,7 +30,7 @@ namespace PRzHealthcareAPI.Helpers
 
                 objeto_mail.Subject = notification.Nty_Name;
                 objeto_mail.IsBodyHtml = true;
-                objeto_mail.Body = notification.Nty_Template.Replace("@@NAZWA", $@"{user.Acc_Firstname} {user.Acc_Lastname}").Replace("@@LINK", $@"http://192.168.56.1:5000/account/confirm-mail?hashCode={user.Acc_RegistrationHash}");
+                objeto_mail.Body = notification.Nty_Template.Replace("@@NAZWA", $@"{user.Acc_Firstname} {user.Acc_Lastname}").Replace("@@LINK", $@"http://localhost:3000/account/confirm-mail?hashCode={user.Acc_RegistrationHash}");
 
                 client.Send(objeto_mail);
 

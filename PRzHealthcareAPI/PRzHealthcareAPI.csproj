@@ -11,7 +11,7 @@
     <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.0" />
     <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
     <PackageReference Include="BoldReports.AspNet.Core" Version="4.2.85" />
-    <PackageReference Include="BoldReports.Net.Core" Version="4.2.85" />
+    <PackageReference Include="BoldReports.Net.Core" Version="4.2.87" />
     <PackageReference Include="FluentValidation" Version="11.4.0" />
     <PackageReference Include="FluentValidation.AspNetCore" Version="11.2.2" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.12" />
@@ -24,6 +24,9 @@
     <PackageReference Include="NLog.Web.AspNetCore" Version="5.2.1" />
     <PackageReference Include="PublicHoliday" Version="2.24.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
+    <PackageReference Include="Syncfusion.DocIO.Net.Core" Version="21.1.38" />
+    <PackageReference Include="Syncfusion.Pdf.Net.Core" Version="21.1.38" />
+    <PackageReference Include="Syncfusion.XlsIO.Net.Core" Version="21.1.38" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.25.1" />
     <PackageReference Include="System.Security.Claims" Version="4.3.0" />
   </ItemGroup>

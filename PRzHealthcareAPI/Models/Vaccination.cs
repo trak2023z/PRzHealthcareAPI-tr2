@@ -8,7 +8,7 @@ namespace PRzHealthcareAPI.Models
         public string Vac_Name { get; set; }
         public string Vac_Description { get; set; }
         [ForeignKey("BinData")]
-        public int Vac_PhotoId { get; set; }
+        public int? Vac_PhotoId { get; set; }
         public int Vac_DaysBetweenVacs { get; set; }
         public bool Vac_IsActive { get; set; }
         public DateTime Vac_InsertedDate { get; set; }

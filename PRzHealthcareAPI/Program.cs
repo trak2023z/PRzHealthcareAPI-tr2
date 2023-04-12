@@ -49,10 +49,10 @@ builder.Host.UseNLog();
 builder.Services.AddControllers().AddFluentValidation().AddJsonOptions(x => { x.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()); });
 
 /*  Services    */
-//todo: services
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IVaccinationService, VaccinationService>();
 builder.Services.AddScoped<IEventService, EventService>();
+builder.Services.AddScoped<HealthcareSeeder>();
 
 builder.Services.AddScoped<IPasswordHasher<Account>, PasswordHasher<Account>>();
 builder.Services.AddDbContext<HealthcareDbContext>();
@@ -74,6 +74,10 @@ builder.Services.AddCors(op =>
 });
 
 var app = builder.Build();
+
+var scope = app.Services.CreateScope();
+var seeder = scope.ServiceProvider.GetRequiredService<HealthcareSeeder>();
+seeder.Seed();
 
 if (app.Environment.IsDevelopment())
 {

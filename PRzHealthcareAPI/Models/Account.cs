@@ -10,7 +10,7 @@ namespace PRzHealthcareAPI.Models
         public int Acc_AtyId { get; set; }
         public string Acc_Login { get; set; }
         public string Acc_Password { get; set;}
-        public int Acc_PhotoId { get; set; }
+        public int? Acc_PhotoId { get; set; }
         public string Acc_Firstname { get; set; }
         public string? Acc_Secondname { get; set; }
         public string Acc_Lastname { get; set; }

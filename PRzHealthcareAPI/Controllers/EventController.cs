@@ -20,6 +20,7 @@ namespace PRzHealthcareAPI.Controllers
             this._eventService = eventService;
         }
 
+        [AllowAnonymous]
         [HttpPost("seed")]
         public async Task<IActionResult> Seed()
         {

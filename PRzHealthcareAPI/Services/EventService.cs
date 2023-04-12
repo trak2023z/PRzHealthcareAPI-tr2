@@ -40,6 +40,10 @@ namespace PRzHealthcareAPI.Services
             {
                 throw new NotFoundException("Brak wolnych terminów.");
             }
+            if(Convert.ToDateTime(selectedDate).Date == DateTime.Now.Date)
+            {
+                events = events.Where(x => x.Eve_TimeFrom > DateTime.Now.AddMinutes(20)).ToList();
+            }
 
             List<EventDto> eventDtos = new List<EventDto>();
 
@@ -152,7 +156,11 @@ namespace PRzHealthcareAPI.Services
         {
             var calendar = new PolandPublicHoliday();
 
-            var doctorsList = _dbContext.Accounts.Where(x => x.Acc_AtyId == 3).ToList();
+            var doctorAccountTypeId = _dbContext.AccountTypes.FirstOrDefault(x => x.Aty_Name == "Doktor").Aty_Id;
+            var administratorAccountId = _dbContext.Accounts.FirstOrDefault(x => x.Acc_Login == "Administrator").Acc_Id;
+            var availableEventTypeId = _dbContext.EventTypes.FirstOrDefault(x => x.Ety_Name == "Wolny").Ety_Id;
+
+            var doctorsList = _dbContext.Accounts.Where(x => x.Acc_AtyId == doctorAccountTypeId).ToList();
             if (!doctorsList.Any())
             {
                 throw new NotFoundException($@"Uzupełnij listę doktorów.");
@@ -185,18 +193,18 @@ namespace PRzHealthcareAPI.Services
                                         Event seedEvent = new Event();
                                         seedEvent = new Event()
                                         {
-                                            Eve_AccId = 1,
+                                            Eve_AccId = null,
                                             Eve_TimeFrom = actualDate,
                                             Eve_TimeTo = actualDate.AddMinutes(15),
                                             Eve_Description = "Dostępny",
-                                            Eve_InsertedAccId = 1,
+                                            Eve_InsertedAccId = administratorAccountId,
                                             Eve_InsertedDate = DateTime.Now,
                                             Eve_DoctorId = doctor.Acc_Id,
                                             Eve_IsActive = true,
-                                            Eve_ModifiedAccId = 1,
+                                            Eve_ModifiedAccId = administratorAccountId,
                                             Eve_ModifiedDate = DateTime.Now,
-                                            Eve_Type = 1,
-                                            Eve_VacId = 2,
+                                            Eve_Type = availableEventTypeId,
+                                            Eve_VacId = null,
                                         };
 
                                         _dbContext.Events.Add(seedEvent);
@@ -250,18 +258,18 @@ namespace PRzHealthcareAPI.Services
                                         Event seedEvent = new Event();
                                         seedEvent = new Event()
                                         {
-                                            Eve_AccId = 1,
+                                            Eve_AccId = null,
                                             Eve_TimeFrom = actualDate,
                                             Eve_TimeTo = actualDate.AddMinutes(15),
                                             Eve_Description = "Dostępny",
-                                            Eve_InsertedAccId = 1,
+                                            Eve_InsertedAccId = administratorAccountId,
                                             Eve_InsertedDate = DateTime.Now,
                                             Eve_DoctorId = doctor.Acc_Id,
                                             Eve_IsActive = true,
-                                            Eve_ModifiedAccId = 1,
+                                            Eve_ModifiedAccId = administratorAccountId,
                                             Eve_ModifiedDate = DateTime.Now,
-                                            Eve_Type = 1,
-                                            Eve_VacId = 2,
+                                            Eve_Type = availableEventTypeId,
+                                            Eve_VacId = null,
                                         };
 
                                         _dbContext.Events.Add(seedEvent);

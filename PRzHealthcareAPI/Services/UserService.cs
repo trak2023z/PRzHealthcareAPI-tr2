@@ -133,7 +133,8 @@ namespace PRzHealthcareAPI.Services
 
         public List<UserDto> GetDoctorsList()
         {
-            var list = _dbContext.Accounts.Where(x => x.Acc_AtyId == 3).ToList();
+            var doctorAccountTypeId = _dbContext.AccountTypes.FirstOrDefault(x => x.Aty_Name == "Doktor").Aty_Id;
+            var list = _dbContext.Accounts.Where(x => x.Acc_AtyId == doctorAccountTypeId).ToList();
             if(list is null)
             {
                 return new List<UserDto>();

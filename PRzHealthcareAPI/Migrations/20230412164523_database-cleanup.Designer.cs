@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PRzHealthcareAPI.Models;
 
@@ -11,9 +12,10 @@ using PRzHealthcareAPI.Models;
 namespace PRzHealthcareAPI.Migrations
 {
     [DbContext(typeof(HealthcareDbContext))]
-    partial class HealthcareDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230412164523_database-cleanup")]
+    partial class databasecleanup
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -239,7 +241,7 @@ namespace PRzHealthcareAPI.Migrations
                     b.Property<int>("Eve_Type")
                         .HasColumnType("int");
 
-                    b.Property<int?>("Eve_VacId")
+                    b.Property<int>("Eve_VacId")
                         .HasColumnType("int");
 
                     b.HasKey("Eve_Id");
@@ -416,7 +418,9 @@ namespace PRzHealthcareAPI.Migrations
 
                     b.HasOne("PRzHealthcareAPI.Models.Vaccination", "Vaccination")
                         .WithMany()
-                        .HasForeignKey("Eve_VacId");
+                        .HasForeignKey("Eve_VacId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Account");
 
