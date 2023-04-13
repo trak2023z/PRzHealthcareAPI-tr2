@@ -11,7 +11,7 @@ namespace PRzHealthcareAPI.Models.DTO
         public int Type { get; set; }
         public int DoctorId { get; set; }
         public int VacId { get; set; }
-        public string Description { get; set; }
+        public string? Description { get; set; }
         public bool IsActive { get; set; }
         public DateTime InsertedDate { get; set; }
         public int InsertedAccId { get; set; }

@@ -56,7 +56,8 @@ namespace PRzHealthcareAPI.Controllers
             return Ok(availableEvents);
         }
 
-        [HttpPost("newevent")]
+        [AllowAnonymous]
+        [HttpPatch("takeeventterm")]
         public ActionResult TakeTerm(EventDto dto)
         {
             string accountId = "";

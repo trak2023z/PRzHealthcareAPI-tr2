@@ -151,6 +151,7 @@ namespace PRzHealthcareAPI.Services
         }
         public async Task<string> ConfirmMail(string hashcode)
         {
+
             try
             {
                 if (String.IsNullOrWhiteSpace(hashcode))
@@ -164,7 +165,9 @@ namespace PRzHealthcareAPI.Services
                     throw new NotFoundException("Błędny kod.");
                 }
 
-                user.Acc_AtyId = 1;
+                var pacientAccountTypeId = _dbContext.AccountTypes.FirstOrDefault(x => x.Aty_Name == "Pacjent").Aty_Id;
+
+                user.Acc_AtyId = pacientAccountTypeId;
                 await _dbContext.SaveChangesAsync();
                 return "Ok";
             }

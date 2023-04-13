@@ -14,7 +14,7 @@ namespace PRzHealthcareAPI.Models
         public int? Eve_DoctorId { get; set; }
         [ForeignKey("Vaccination")]
         public int? Eve_VacId { get; set; }
-        public string Eve_Description { get; set; }
+        public string? Eve_Description { get; set; }
         public bool Eve_IsActive { get; set; }  
         public DateTime Eve_InsertedDate { get; set; }
         public int Eve_InsertedAccId { get; set; }

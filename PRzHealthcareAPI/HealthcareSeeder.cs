@@ -82,9 +82,14 @@ namespace PRzHealthcareAPI
         {
             var accounts = new List<Account>();
 
+            var adminAccountTypeId = _dbContext.AccountTypes.FirstOrDefault(x => x.Aty_Name == "Administrator").Aty_Id;
+            var doctorAccountTypeId = _dbContext.AccountTypes.FirstOrDefault(x => x.Aty_Name == "Doktor").Aty_Id;
+            var nurseAccountTypeId = _dbContext.AccountTypes.FirstOrDefault(x => x.Aty_Name == "Pielęgniarz").Aty_Id;
+            var patientAccountTypeId = _dbContext.AccountTypes.FirstOrDefault(x => x.Aty_Name == "Pacjent").Aty_Id;
+
             var adminAccount = new Account()
             {
-                Acc_AtyId = 1006,
+                Acc_AtyId = adminAccountTypeId,
                 Acc_ContactNumber = "123-456-789",
                 Acc_DateOfBirth = Convert.ToDateTime("14.06.1998"),
                 Acc_Email = @"165083@stud.prz.edu.pl",
@@ -105,7 +110,7 @@ namespace PRzHealthcareAPI
 
             var doctor1Account = new Account()
             {
-                Acc_AtyId = 1005,
+                Acc_AtyId = doctorAccountTypeId,
                 Acc_ContactNumber = "123-456-789",
                 Acc_DateOfBirth = Convert.ToDateTime("01.01.1988"),
                 Acc_Email = @"165083@stud.prz.edu.pl",
@@ -126,7 +131,7 @@ namespace PRzHealthcareAPI
 
             var doctor2Account = new Account()
             {
-                Acc_AtyId = 1005,
+                Acc_AtyId = doctorAccountTypeId,
                 Acc_ContactNumber = "966-455-123",
                 Acc_DateOfBirth = Convert.ToDateTime("23.05.1968"),
                 Acc_Email = @"165083@stud.prz.edu.pl",
@@ -147,7 +152,7 @@ namespace PRzHealthcareAPI
 
             var nurseAccount = new Account()
             {
-                Acc_AtyId = 1004,
+                Acc_AtyId = nurseAccountTypeId,
                 Acc_ContactNumber = "123-456-789",
                 Acc_DateOfBirth = Convert.ToDateTime("01.01.1988"),
                 Acc_Email = @"165083@stud.prz.edu.pl",
@@ -168,7 +173,7 @@ namespace PRzHealthcareAPI
 
             var patientAccount = new Account()
             {
-                Acc_AtyId = 1003,
+                Acc_AtyId = patientAccountTypeId,
                 Acc_ContactNumber = "987-456-132",
                 Acc_DateOfBirth = Convert.ToDateTime("01.06.1996"),
                 Acc_Email = @"165083@stud.prz.edu.pl",
@@ -197,6 +202,7 @@ namespace PRzHealthcareAPI
         }
         private IEnumerable<Vaccination> GetVaccinations()
         {
+            var administratorId = _dbContext.Accounts.FirstOrDefault(x => x.Acc_Login == "Administrator").Acc_Id;
             var vaccinations = new List<Vaccination>()
             {
                 new Vaccination()
@@ -207,9 +213,9 @@ namespace PRzHealthcareAPI
                    Vac_DaysBetweenVacs = 12,
                    Vac_IsActive = true,
                    Vac_InsertedDate = DateTime.Now,
-                   Vac_InsertedAccId = 1,
+                   Vac_InsertedAccId = administratorId,
                    Vac_ModifiedDate = DateTime.Now,
-                   Vac_ModifiedAccId = 1
+                   Vac_ModifiedAccId = administratorId
                 },
                 new Vaccination()
                 {
@@ -219,9 +225,9 @@ namespace PRzHealthcareAPI
                    Vac_DaysBetweenVacs = 12,
                    Vac_IsActive = true,
                    Vac_InsertedDate = DateTime.Now,
-                   Vac_InsertedAccId = 1,
+                   Vac_InsertedAccId = administratorId,
                    Vac_ModifiedDate = DateTime.Now,
-                   Vac_ModifiedAccId = 1
+                   Vac_ModifiedAccId = administratorId
                 },
                 new Vaccination()
                 {
@@ -231,9 +237,9 @@ namespace PRzHealthcareAPI
                    Vac_DaysBetweenVacs = 12,
                    Vac_IsActive = true,
                    Vac_InsertedDate = DateTime.Now,
-                   Vac_InsertedAccId = 1,
+                   Vac_InsertedAccId = administratorId,
                    Vac_ModifiedDate = DateTime.Now,
-                   Vac_ModifiedAccId = 1
+                   Vac_ModifiedAccId = administratorId
                 },
             };
             return vaccinations;

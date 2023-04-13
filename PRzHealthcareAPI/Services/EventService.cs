@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NLog;
 using NLog.Fluent;
 using PRzHealthcareAPI.Exceptions;
@@ -35,7 +36,9 @@ namespace PRzHealthcareAPI.Services
 
         public List<EventDto> GetAvailableDates(string selectedDate, string selectedDoctorId)
         {
-            var events = _dbContext.Events.Where(x => x.Eve_TimeFrom > Convert.ToDateTime(selectedDate) && x.Eve_TimeFrom <= Convert.ToDateTime(selectedDate).AddDays(1) && x.Eve_Type == 1 && x.Eve_DoctorId == Convert.ToInt32(selectedDoctorId)).ToList();
+
+            var availableEventTypeId = _dbContext.EventTypes.FirstOrDefault(x => x.Ety_Name == "Wolny").Ety_Id;
+            var events = _dbContext.Events.Where(x => x.Eve_TimeFrom > Convert.ToDateTime(selectedDate) && x.Eve_TimeFrom <= Convert.ToDateTime(selectedDate).AddDays(1) && x.Eve_Type == availableEventTypeId && x.Eve_DoctorId == Convert.ToInt32(selectedDoctorId)).ToList();
             if (!events.Any())
             {
                 throw new NotFoundException("Brak wolnych terminów.");
@@ -58,7 +61,8 @@ namespace PRzHealthcareAPI.Services
 
         public List<EventDto> GetUserEvents(int accountId)
         {
-            var events = _dbContext.Events.Where(x => x.Eve_AccId == accountId && x.Eve_Type == 2 && x.Eve_TimeTo > DateTime.Now).ToList();
+            var busyEventTypeId = _dbContext.EventTypes.FirstOrDefault(x => x.Ety_Name == "Zajęty").Ety_Id;
+            var events = _dbContext.Events.Where(x => x.Eve_AccId == accountId && x.Eve_Type == busyEventTypeId && x.Eve_TimeTo > DateTime.Now).ToList();
 
             List<EventDto> eventDtos = new List<EventDto>();
 
@@ -72,7 +76,8 @@ namespace PRzHealthcareAPI.Services
         }
         public List<EventDto> GetDoctorEvents(int accountId)
         {
-            var events = _dbContext.Events.Where(x => x.Eve_DoctorId == accountId && x.Eve_Type == 2).ToList();
+            var busyEventTypeId = _dbContext.EventTypes.FirstOrDefault(x => x.Ety_Name == "Zajęty").Ety_Id;
+            var events = _dbContext.Events.Where(x => x.Eve_DoctorId == accountId && x.Eve_Type == busyEventTypeId).ToList();
 
             List<EventDto> eventDtos = new List<EventDto>();
 
@@ -86,7 +91,9 @@ namespace PRzHealthcareAPI.Services
         }
         public List<EventDto> GetNurseEvents()
         {
-            var events = _dbContext.Events.Where(x => x.Eve_Type == 2 && x.Eve_Type == 3).ToList();
+            var busyEventTypeId = _dbContext.EventTypes.FirstOrDefault(x => x.Ety_Name == "Zajęty").Ety_Id;
+            var awayEventTypeId = _dbContext.EventTypes.FirstOrDefault(x => x.Ety_Name == "Nieobecność").Ety_Id;
+            var events = _dbContext.Events.Where(x => x.Eve_Type == busyEventTypeId && x.Eve_Type == awayEventTypeId).ToList();
 
             List<EventDto> eventDtos = new List<EventDto>();
 
@@ -101,7 +108,8 @@ namespace PRzHealthcareAPI.Services
 
         public void TakeTerm(EventDto dto, string accountId)
         {
-            var changedEvent = _dbContext.Events.FirstOrDefault(x => x.Eve_Id == dto.Id);
+            var busyEventTypeId = _dbContext.EventTypes.FirstOrDefault(x => x.Ety_Name == "Zajęty").Ety_Id;
+            var changedEvent = _dbContext.Events.FirstOrDefault(x => x.Eve_TimeFrom == dto.TimeFrom);
             if (changedEvent == null)
             {
                 throw new NotFoundException("Nie znaleziono odpowiedniego terminu.");
@@ -111,19 +119,25 @@ namespace PRzHealthcareAPI.Services
             {
                 throw new NotFoundException("Nie znaleziono użytkownika.");
             }
+            if(changedEvent.Eve_Type == busyEventTypeId)
+            {
+                throw new NotFoundException("Termin zajęty.");
+            }
 
-            changedEvent.Eve_AccId = dto.AccId;
-            changedEvent.Eve_Type = 2;
+            changedEvent.Eve_AccId = Convert.ToInt32(accountId);
+            changedEvent.Eve_Type = busyEventTypeId;
             changedEvent.Eve_DoctorId = dto.DoctorId;
             changedEvent.Eve_VacId = dto.VacId;
-            changedEvent.Eve_Description = dto.Description;
+            changedEvent.Eve_Description = dto.Description != null? dto.Description : "";
             changedEvent.Eve_ModifiedAccId = user.Acc_Id;
             changedEvent.Eve_ModifiedDate = DateTime.Now;
             changedEvent.Eve_InsertedDate = DateTime.Now;
             changedEvent.Eve_InsertedAccId = user.Acc_Id;
 
             _dbContext.Update(changedEvent);
-            _dbContext.SaveChangesAsync();
+            _dbContext.SaveChanges();
+
+            //todo: wyślij maila z potwierdzeniem wizyty
 
         }
 
@@ -140,13 +154,13 @@ namespace PRzHealthcareAPI.Services
                 throw new NotFoundException("Nie znaleziono użytkownika.");
             }
 
-            canceledEvent.Eve_AccId = 1;
+            canceledEvent.Eve_AccId = null;
             canceledEvent.Eve_Description = "Dostępny";
             canceledEvent.Eve_ModifiedAccId = user.Acc_Id;
             canceledEvent.Eve_ModifiedDate = DateTime.Now;
             canceledEvent.Eve_InsertedDate = DateTime.Now;
             canceledEvent.Eve_InsertedAccId = user.Acc_Id;
-            canceledEvent.Eve_VacId = 2;
+            canceledEvent.Eve_VacId = null;
 
             _dbContext.Update(canceledEvent);
             _dbContext.SaveChangesAsync();
