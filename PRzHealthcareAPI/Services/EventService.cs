@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NLog;
 using NLog.Fluent;
 using PRzHealthcareAPI.Exceptions;
+using PRzHealthcareAPI.Helpers;
 using PRzHealthcareAPI.Models;
 using PRzHealthcareAPI.Models.DTO;
 using PublicHoliday;
@@ -109,7 +110,7 @@ namespace PRzHealthcareAPI.Services
         public void TakeTerm(EventDto dto, string accountId)
         {
             var busyEventTypeId = _dbContext.EventTypes.FirstOrDefault(x => x.Ety_Name == "Zajęty").Ety_Id;
-            var changedEvent = _dbContext.Events.FirstOrDefault(x => x.Eve_TimeFrom == dto.TimeFrom);
+            var changedEvent = _dbContext.Events.FirstOrDefault(x => x.Eve_TimeFrom == dto.TimeFrom && x.Eve_DoctorId == dto.DoctorId);
             if (changedEvent == null)
             {
                 throw new NotFoundException("Nie znaleziono odpowiedniego terminu.");
@@ -121,7 +122,7 @@ namespace PRzHealthcareAPI.Services
             }
             if(changedEvent.Eve_Type == busyEventTypeId)
             {
-                throw new NotFoundException("Termin zajęty.");
+                throw new NotFoundException("Termin został zajęty.");
             }
 
             changedEvent.Eve_AccId = Convert.ToInt32(accountId);
@@ -137,8 +138,7 @@ namespace PRzHealthcareAPI.Services
             _dbContext.Update(changedEvent);
             _dbContext.SaveChanges();
 
-            //todo: wyślij maila z potwierdzeniem wizyty
-
+            Tools.SendVisitConfirmation(user, _dbContext.NotificationTypes.FirstOrDefault(x => x.Nty_Name == "Potwierdzenie wizyty w klinice PRz Healthcare"));
         }
 
         public void CancelTerm(int eventId, string accountId)

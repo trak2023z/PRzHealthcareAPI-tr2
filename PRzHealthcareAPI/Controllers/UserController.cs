@@ -37,7 +37,6 @@ namespace PRzHealthcareAPI.Controllers
         }
 
         [HttpGet("getdoctorslist")]
-        //todo: [Authorize]
         public ActionResult GetDoctorsList()
         {
             var doctors = _userService.GetDoctorsList();
@@ -53,7 +52,6 @@ namespace PRzHealthcareAPI.Controllers
         }
 
         [HttpPut("changepassword")]
-        [Authorize]
         public ActionResult ChangePassword([FromBody] ChangeUserPasswordDto dto)
         {
             if (HttpContext.User.Identity is ClaimsIdentity identity)
@@ -64,5 +62,20 @@ namespace PRzHealthcareAPI.Controllers
             return Ok();
         }
 
+        [AllowAnonymous]
+        [HttpPut("reset-password")]
+        public ActionResult ResetPassword([FromQuery] string email)
+        {
+            _userService.ResetPassword(email);
+            return Ok();
+        }
+
+        [AllowAnonymous]
+        [HttpPut("reset-passwordcheck")]
+        public ActionResult ResetPasswordCheckHashCode([FromQuery] string hashCode)
+        {
+            _userService.ResetPasswordCheckHashCode(hashCode);
+            return Ok();
+        }
     }
 }

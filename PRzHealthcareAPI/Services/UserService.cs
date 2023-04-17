@@ -21,6 +21,8 @@ namespace PRzHealthcareAPI.Services
         Task<string> Register(RegisterUserDto dto);
         Task<string> ConfirmMail(string hashcode);
         List<UserDto> GetDoctorsList();
+        Task<string> ResetPassword(string email);
+        Task<string> ResetPasswordCheckHashCode(string hashcode);
     }
 
     public class UserService : IUserService
@@ -151,7 +153,6 @@ namespace PRzHealthcareAPI.Services
         }
         public async Task<string> ConfirmMail(string hashcode)
         {
-
             try
             {
                 if (String.IsNullOrWhiteSpace(hashcode))
@@ -165,15 +166,15 @@ namespace PRzHealthcareAPI.Services
                     throw new NotFoundException("Błędny kod.");
                 }
 
-                var pacientAccountTypeId = _dbContext.AccountTypes.FirstOrDefault(x => x.Aty_Name == "Pacjent").Aty_Id;
+                var patientAccountTypeId = _dbContext.AccountTypes.FirstOrDefault(x => x.Aty_Name == "Pacjent").Aty_Id;
 
-                user.Acc_AtyId = pacientAccountTypeId;
+                user.Acc_AtyId = patientAccountTypeId;
                 await _dbContext.SaveChangesAsync();
                 return "Ok";
             }
             catch (Exception ex)
             {
-                return ex.Message;
+                throw new BadRequestException("Wystąpił błąd podczas próby potwierdzenia użytkownika.");
             }
         }
         public void ChangePassword(ChangeUserPasswordDto dto)
@@ -200,9 +201,60 @@ namespace PRzHealthcareAPI.Services
             _dbContext.Accounts.Update(user);
             _dbContext.SaveChanges();
         }
+
+        public async Task<string> ResetPassword(string email)
+        {
+            try
+            {
+                var user = _dbContext.Accounts.FirstOrDefault(x => x.Acc_Email == email);
+
+                if (user != null)
+                {
+                    user.Acc_ReminderHash = CreateRandomToken();
+                    user.Acc_ReminderExpire = DateTime.Now.AddDays(1);
+                    _dbContext.SaveChanges();
+
+                    Tools.SendPasswordReminder(user, _dbContext.NotificationTypes.FirstOrDefault(x => x.Nty_Name == "Przypomnienie hasła w systemie PRz Healthcare"));
+                }
+                return "Ok";
+            }
+            catch (Exception ex)
+            {
+                throw new BadRequestException("Wystąpił błąd podczas próby zresetowania hasła. Spróbuj ponownie za moment.");
+            }
+            
+        }
+        public async Task<string> ResetPasswordCheckHashCode(string hashcode)
+        {
+            try
+            {
+                if (String.IsNullOrWhiteSpace(hashcode))
+                {
+                    throw new NotFoundException("Błędny kod.");
+                }
+
+                var user = _dbContext.Accounts.FirstOrDefault(x => x.Acc_ReminderHash == hashcode);
+                if (user == null)
+                {
+                    throw new NotFoundException("Błędny kod.");
+                }
+
+                if(user.Acc_ReminderExpire > DateTime.Now)
+                {
+                    throw new BadRequestException("Link został przedawniony. Wybierz opcję 'Przypomnij hasło' ponownie");
+                }
+
+                return "Ok";
+            }
+            catch (Exception ex)
+            {
+                throw new BadRequestException("Wystąpił błąd podczas próby potwierdzenia użytkownika na podstawie adres e-mail.");
+            }
+        }
         private string CreateRandomToken()
         {
             return Convert.ToHexString(RandomNumberGenerator.GetBytes(64));
         }
+        
     }
 }
