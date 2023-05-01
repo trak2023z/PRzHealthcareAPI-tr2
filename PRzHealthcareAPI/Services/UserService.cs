@@ -50,26 +50,14 @@ namespace PRzHealthcareAPI.Services
 
             try
             {
-                var newPhoto = new BinData()
-                {
-                    Bin_Name = $@"{dto.Login}_Photo",
-                    Bin_Data = dto.PhotoBinary is null? "" : dto.PhotoBinary,
-                    Bin_InsertedAccId = 0,
-                    Bin_InsertedDate = DateTime.Now,
-                    Bin_ModifiedAccId = 0,
-                    Bin_ModifiedDate = DateTime.Now,
-                };
-
-                _dbContext.BinData.Add(newPhoto);
-
                 var newUser = _mapper.Map<Account>(dto);
                 newUser.Acc_RegistrationHash = CreateRandomToken();
                 newUser.Acc_InsertedDate = DateTime.Now;
                 newUser.Acc_ModifiedDate = DateTime.Now;
                 newUser.Acc_IsActive = true;
-                newUser.Acc_PhotoId = newPhoto.Bin_Id;
+                newUser.Acc_PhotoId = null;
                 newUser.Acc_Password = _passwordHasher.HashPassword(newUser, dto.Password);
-                newUser.Acc_AtyId = _dbContext.AccountTypes.FirstOrDefault(x => x.Aty_Name == "Niezarejestrowany").Aty_Id;
+                newUser.Acc_AtyId = _dbContext.AccountTypes.FirstOrDefault(x => x.Aty_Name == "Niepotwierdzony").Aty_Id;
                 _dbContext.Accounts.Add(newUser);
 
                 await _dbContext.SaveChangesAsync();

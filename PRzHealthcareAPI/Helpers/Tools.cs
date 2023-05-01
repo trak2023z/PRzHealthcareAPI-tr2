@@ -75,7 +75,40 @@ namespace PRzHealthcareAPI.Helpers
                 return false;
             }
         }
-        public static bool SendVisitConfirmation(Account user, NotificationType notification)
+        public static bool SendVisitConfirmation(Account user,Event newEvent, NotificationType notification)
+        {
+            try
+            {
+                MailMessage objeto_mail = new MailMessage();
+                SmtpClient client = new SmtpClient
+                {
+                    Port = _port,
+                    Host = _host,
+                    Timeout = _timeout,
+                    DeliveryMethod = SmtpDeliveryMethod.Network,
+                    UseDefaultCredentials = false,
+                    Credentials = new System.Net.NetworkCredential(_senderEmail, _passwordEmail),
+                    EnableSsl = true
+                };
+                objeto_mail.From = new MailAddress(_senderEmail);
+                objeto_mail.To.Add(new MailAddress(user.Acc_Email));
+
+                objeto_mail.Subject = notification.Nty_Name;
+                objeto_mail.IsBodyHtml = true;
+                objeto_mail.Body = notification.Nty_Template
+                    .Replace("@@NAZWA", $@"{user.Acc_Firstname} {user.Acc_Lastname}")
+                    .Replace("@@TERMIN", $@"{newEvent.Eve_TimeFrom.ToLongDateString()}");
+
+                client.Send(objeto_mail);
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
+        }
+        public static bool SendVisitCancellation(Account user, NotificationType notification)
         {
             try
             {

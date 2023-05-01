@@ -138,7 +138,7 @@ namespace PRzHealthcareAPI.Services
             _dbContext.Update(changedEvent);
             _dbContext.SaveChanges();
 
-            Tools.SendVisitConfirmation(user, _dbContext.NotificationTypes.FirstOrDefault(x => x.Nty_Name == "Potwierdzenie wizyty w klinice PRz Healthcare"));
+            Tools.SendVisitConfirmation(user, changedEvent, _dbContext.NotificationTypes.FirstOrDefault(x => x.Nty_Name == "Potwierdzenie wizyty w klinice PRz Healthcare"));
         }
 
         public void CancelTerm(int eventId, string accountId)
@@ -164,6 +164,8 @@ namespace PRzHealthcareAPI.Services
 
             _dbContext.Update(canceledEvent);
             _dbContext.SaveChangesAsync();
+
+            Tools.SendVisitCancellation(user, _dbContext.NotificationTypes.FirstOrDefault(x => x.Nty_Name == "Anulowanie wizyty w klinice PRz Healthcare"));
         }
 
         public bool SeedDates()
