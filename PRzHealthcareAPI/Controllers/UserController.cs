@@ -64,9 +64,16 @@ namespace PRzHealthcareAPI.Controllers
 
         [AllowAnonymous]
         [HttpPut("reset-password")]
-        public ActionResult ResetPassword([FromQuery] string email)
+        public ActionResult ResetPassword([FromBody] ResetUserPasswordDto dto)
         {
-            _userService.ResetPassword(email);
+            _userService.ResetPassword(dto);
+            return Ok();
+        }
+        [AllowAnonymous]
+        [HttpPut("reset-password-request")]
+        public ActionResult ResetPasswordRequest([FromQuery] string email)
+        {
+            _userService.ResetPasswordRequest(email);
             return Ok();
         }
 

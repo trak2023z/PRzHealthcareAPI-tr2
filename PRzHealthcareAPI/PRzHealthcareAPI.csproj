@@ -33,6 +33,7 @@
 
   <ItemGroup>
     <Folder Include="Models\Validators\" />
+    <Folder Include="Resources\" />
   </ItemGroup>
 
 </Project>

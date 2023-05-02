@@ -7,7 +7,12 @@ namespace PRzHealthcareAPI.Models
     {
         //KOMPUTEREK\PC
         //DESKTOP-TKR85BK
-        private string _connectionString = $@"Server=KOMPUTEREK\PC;User Id=sa;Password=Mateusz1;Database=PRzHealthcare;Trusted_Connection=True;Trust Server Certificate=true";
+        static IConfigurationRoot configuration = new ConfigurationBuilder()
+                    .SetBasePath(Directory.GetCurrentDirectory())
+                    .AddJsonFile("appsettings.json")
+                    .AddEnvironmentVariables()
+                    .Build();
+        private string _connectionString = configuration.GetSection("ConnectionString").Value.ToString();// $@"Server=KOMPUTEREK\PC;User Id=sa;Password=Mateusz1;Database=PRzHealthcare;Trusted_Connection=True;Trust Server Certificate=true";
         public DbSet<Account> Accounts { get; set; }
         public DbSet<AccountType> AccountTypes { get; set; }
         public DbSet<BinData> BinData { get; set; }

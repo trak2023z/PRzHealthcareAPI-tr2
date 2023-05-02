@@ -8,6 +8,7 @@ using PRzHealthcareAPI.Models;
 using PRzHealthcareAPI.Services;
 using System.Text;
 using System.Text.Json.Serialization;
+using System.Web.Services.Description;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,7 +26,11 @@ IConfigurationRoot configuration = new ConfigurationBuilder()
 var authenticationSettings = new AuthenticationSettings();
 configuration.GetSection("Authentication").Bind(authenticationSettings);
 
+var emailSettings = new EmailSettings();
+configuration.GetSection("MailSettings").Bind(emailSettings);
+
 builder.Services.AddSingleton(authenticationSettings);
+builder.Services.AddSingleton(emailSettings);
 builder.Services.AddAuthentication(option =>
 {
     option.DefaultAuthenticateScheme = "Bearer";
@@ -66,6 +71,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddMemoryCache();
 builder.Services.AddCors(op =>
 {
     op.AddPolicy("FrontEndClient", builder =>
@@ -73,6 +79,7 @@ builder.Services.AddCors(op =>
         .AllowAnyHeader()
         .AllowAnyOrigin());
 });
+builder.Services.AddMvc();
 
 var app = builder.Build();
 
@@ -94,13 +101,11 @@ if (app.Environment.IsDevelopment())
 app.UseMiddleware<ErrorHandlingMiddleware>();
 app.UseMiddleware<RequestTimeMiddleware>();
 
+app.UseHttpsRedirection();
 app.UseAuthentication();
 
-app.UseCors("FrontEndClient");
-
 app.UseRouting();
-
-app.UseHttpsRedirection();
+app.UseCors("FrontEndClient");
 
 app.UseAuthorization();
 

@@ -26,12 +26,14 @@ namespace PRzHealthcareAPI.Services
     {
         private readonly HealthcareDbContext _dbContext;
         private readonly AuthenticationSettings _authentication;
+        private readonly EmailSettings _emailSettings;
         private readonly IMapper _mapper;
 
-        public EventService(HealthcareDbContext dbContext, AuthenticationSettings authentication, IMapper mapper)
+        public EventService(HealthcareDbContext dbContext, AuthenticationSettings authentication,EmailSettings emailSettings, IMapper mapper)
         {
             _dbContext = dbContext;
             _authentication = authentication;
+            this._emailSettings = emailSettings;
             _mapper = mapper;
         }
 
@@ -94,7 +96,7 @@ namespace PRzHealthcareAPI.Services
         {
             var busyEventTypeId = _dbContext.EventTypes.FirstOrDefault(x => x.Ety_Name == "Zajęty").Ety_Id;
             var awayEventTypeId = _dbContext.EventTypes.FirstOrDefault(x => x.Ety_Name == "Nieobecność").Ety_Id;
-            var events = _dbContext.Events.Where(x => x.Eve_Type == busyEventTypeId && x.Eve_Type == awayEventTypeId).ToList();
+            var events = _dbContext.Events.Where(x => (x.Eve_Type == busyEventTypeId || x.Eve_Type == awayEventTypeId)).ToList();
 
             List<EventDto> eventDtos = new List<EventDto>();
 
@@ -138,7 +140,7 @@ namespace PRzHealthcareAPI.Services
             _dbContext.Update(changedEvent);
             _dbContext.SaveChanges();
 
-            Tools.SendVisitConfirmation(user, changedEvent, _dbContext.NotificationTypes.FirstOrDefault(x => x.Nty_Name == "Potwierdzenie wizyty w klinice PRz Healthcare"));
+            Tools.SendVisitConfirmation(_emailSettings,user, changedEvent, _dbContext.NotificationTypes.FirstOrDefault(x => x.Nty_Name == "Potwierdzenie wizyty w klinice PRz Healthcare"));
         }
 
         public void CancelTerm(int eventId, string accountId)
@@ -165,7 +167,7 @@ namespace PRzHealthcareAPI.Services
             _dbContext.Update(canceledEvent);
             _dbContext.SaveChangesAsync();
 
-            Tools.SendVisitCancellation(user, _dbContext.NotificationTypes.FirstOrDefault(x => x.Nty_Name == "Anulowanie wizyty w klinice PRz Healthcare"));
+            Tools.SendVisitCancellation(_emailSettings, user, canceledEvent, _dbContext.NotificationTypes.FirstOrDefault(x => x.Nty_Name == "Anulowanie wizyty w klinice PRz Healthcare"));
         }
 
         public bool SeedDates()

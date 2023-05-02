@@ -21,7 +21,8 @@ namespace PRzHealthcareAPI.Services
         Task<string> Register(RegisterUserDto dto);
         Task<string> ConfirmMail(string hashcode);
         List<UserDto> GetDoctorsList();
-        Task<string> ResetPassword(string email);
+        Task<string> ResetPassword(ResetUserPasswordDto dto);
+        Task<string> ResetPasswordRequest(string email);
         Task<string> ResetPasswordCheckHashCode(string hashcode);
     }
 
@@ -29,13 +30,15 @@ namespace PRzHealthcareAPI.Services
     {
         private readonly HealthcareDbContext _dbContext;
         private readonly AuthenticationSettings _authentication;
+        private readonly EmailSettings _emailSettings;
         private readonly IPasswordHasher<Account> _passwordHasher;
         private readonly IMapper _mapper;
 
-        public UserService(HealthcareDbContext dbContext, AuthenticationSettings authentication, IPasswordHasher<Account> passwordHasher, IMapper mapper)
+        public UserService(HealthcareDbContext dbContext, AuthenticationSettings authentication, EmailSettings emailSettings, IPasswordHasher<Account> passwordHasher, IMapper mapper)
         {
             this._dbContext = dbContext;
             this._authentication = authentication;
+            this._emailSettings = emailSettings;
             this._passwordHasher = passwordHasher;
             this._mapper = mapper;
         }
@@ -62,7 +65,7 @@ namespace PRzHealthcareAPI.Services
 
                 await _dbContext.SaveChangesAsync();
 
-                Tools.SendRegistrationMail(newUser, _dbContext.NotificationTypes.FirstOrDefault(x => x.Nty_Name == "Rejestracja użytkownika w systemie PRz Healthcare"));
+                Tools.SendRegistrationMail(_emailSettings, newUser, _dbContext.NotificationTypes.FirstOrDefault(x => x.Nty_Name == "Rejestracja użytkownika w systemie PRz Healthcare"));
                 return "";
             }
             catch (Exception ex)
@@ -190,7 +193,7 @@ namespace PRzHealthcareAPI.Services
             _dbContext.SaveChanges();
         }
 
-        public async Task<string> ResetPassword(string email)
+        public async Task<string> ResetPasswordRequest(string email)
         {
             try
             {
@@ -202,7 +205,7 @@ namespace PRzHealthcareAPI.Services
                     user.Acc_ReminderExpire = DateTime.Now.AddDays(1);
                     _dbContext.SaveChanges();
 
-                    Tools.SendPasswordReminder(user, _dbContext.NotificationTypes.FirstOrDefault(x => x.Nty_Name == "Przypomnienie hasła w systemie PRz Healthcare"));
+                    Tools.SendPasswordReminder(_emailSettings, user, _dbContext.NotificationTypes.FirstOrDefault(x => x.Nty_Name == "Przypomnienie hasła w systemie PRz Healthcare"));
                 }
                 return "Ok";
             }
@@ -211,6 +214,32 @@ namespace PRzHealthcareAPI.Services
                 throw new BadRequestException("Wystąpił błąd podczas próby zresetowania hasła. Spróbuj ponownie za moment.");
             }
             
+        }
+        public async Task<string> ResetPassword(ResetUserPasswordDto dto)
+        {
+            try
+            {
+                var user = _dbContext.Accounts.FirstOrDefault(x => x.Acc_ReminderHash == dto.HashCode);
+
+                if (user != null)
+                {
+                    if (dto.NewPassword != dto.NewPasswordRepeat)
+                    {
+                        throw new BadRequestException("Hasła są niezgodne.");
+                    }
+
+                    user.Acc_Password = _passwordHasher.HashPassword(user, dto.NewPassword);
+
+                    _dbContext.Accounts.Update(user);
+                    _dbContext.SaveChanges();
+                }
+                return "Ok";
+            }
+            catch (Exception ex)
+            {
+                throw new BadRequestException("Wystąpił błąd podczas próby zresetowania hasła. Spróbuj ponownie za moment.");
+            }
+
         }
         public async Task<string> ResetPasswordCheckHashCode(string hashcode)
         {
