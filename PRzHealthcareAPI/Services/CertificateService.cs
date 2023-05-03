@@ -1,51 +1,98 @@
 ﻿using BoldReports.Writer;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using PRzHealthcareAPI.Exceptions;
+using PRzHealthcareAPI.Models;
+using PRzHealthcareAPI.Models.DTO;
 
 namespace PRzHealthcareAPI.Services
 {
     public interface ICertificateService
     {
-        ActionResult PrintCOVIDCertificate();
+        FileStreamResult PrintCOVIDCertificateToPDF(EventDto dto);
+        MemoryStream PrintCOVIDCertificateToMemoryStream(EventDto dto);
     }
 
     public class CertificateService : ICertificateService
     {
         private readonly IWebHostEnvironment _hostingEnvironment;
+        private readonly HealthcareDbContext _dbContext;
 
-        public CertificateService(IWebHostEnvironment hostingEnvironment)
+        public CertificateService(IWebHostEnvironment hostingEnvironment, HealthcareDbContext dbContext)
         {
-            this._hostingEnvironment = hostingEnvironment;
+            _hostingEnvironment = hostingEnvironment;
+            _dbContext = dbContext;
         }
 
-        public ActionResult PrintCOVIDCertificate()
+        public FileStreamResult PrintCOVIDCertificateToPDF(EventDto dto)
         {
             try
             {
-                FileStream inputStream = new FileStream(_hostingEnvironment.WebRootPath + @"\Resources\ZaswiadczenieCOVID.rdl", FileMode.Open, FileAccess.Read);
-                MemoryStream reportStream = new MemoryStream();
-                inputStream.CopyTo(reportStream);
-                reportStream.Position = 0;
-                inputStream.Close();
+                if (dto is null)
+                {
+                    dto = new EventDto() { Id = 7195 };
+                }
+                FileStream reportStream = new FileStream(@"D:\Studia\ProjektInzynierski\1.0\PRzHealthcareAPI\PRzHealthcareAPI\Resources\ZaswiadczenieCOVID.rdl", FileMode.Open, FileAccess.Read);
                 BoldReports.Writer.ReportWriter writer = new BoldReports.Writer.ReportWriter();
+                writer.ReportProcessingMode = ProcessingMode.Remote;
+                List<BoldReports.Web.ReportParameter> userParameters = new List<BoldReports.Web.ReportParameter>
+            {
+                new BoldReports.Web.ReportParameter()
+                {
+                    Name = "EventId",
+                    Values = new List<string>() { dto.Id.ToString() }
+                }
+            };
 
-                string fileName = null;
-                WriterFormat format;
-                string type = null;
+                writer.SetParameters(userParameters);
 
-                fileName = "ZaswiadczenieCOVID.pdf";
-                type = "pdf";
-                format = WriterFormat.PDF;
+                string fileName = "ZaswiadczenieCOVID.pdf";
+                string type = "pdf";
+                WriterFormat format = WriterFormat.PDF;
 
                 writer.LoadReport(reportStream);
                 MemoryStream memoryStream = new MemoryStream();
                 writer.Save(memoryStream, format);
 
-                // Download the generated export document to the client side.
                 memoryStream.Position = 0;
                 FileStreamResult fileStreamResult = new FileStreamResult(memoryStream, "application/" + type);
                 fileStreamResult.FileDownloadName = fileName;
                 return fileStreamResult;
+            }
+            catch (Exception ex)
+            {
+                throw new BadRequestException(ex.Message);
+            }
+        }
+        public MemoryStream PrintCOVIDCertificateToMemoryStream(EventDto dto)
+        {
+            try
+            {
+                if (dto is null)
+                {
+                    dto = new EventDto() { Id = 7195 };
+                }
+                FileStream reportStream = new FileStream(@"D:\Studia\ProjektInzynierski\1.0\PRzHealthcareAPI\PRzHealthcareAPI\Resources\ZaswiadczenieCOVID.rdl", FileMode.Open, FileAccess.Read);
+                BoldReports.Writer.ReportWriter writer = new BoldReports.Writer.ReportWriter();
+                writer.ReportProcessingMode = ProcessingMode.Remote;
+                List<BoldReports.Web.ReportParameter> userParameters = new List<BoldReports.Web.ReportParameter>
+            {
+                new BoldReports.Web.ReportParameter()
+                {
+                    Name = "EventId",
+                    Values = new List<string>() { dto.Id.ToString() }
+                }
+            };
+
+                writer.SetParameters(userParameters);
+
+                WriterFormat format = WriterFormat.PDF;
+
+                writer.LoadReport(reportStream);
+                MemoryStream memoryStream = new MemoryStream();
+                writer.Save(memoryStream, format);
+
+                return memoryStream;
             }
             catch (Exception ex)
             {

@@ -24,6 +24,7 @@ namespace PRzHealthcareAPI.Services
         Task<string> ResetPassword(ResetUserPasswordDto dto);
         Task<string> ResetPasswordRequest(string email);
         Task<string> ResetPasswordCheckHashCode(string hashcode);
+        List<UserDto> GetPatientsList();
     }
 
     public class UserService : IUserService
@@ -127,8 +128,26 @@ namespace PRzHealthcareAPI.Services
         public List<UserDto> GetDoctorsList()
         {
             var doctorAccountTypeId = _dbContext.AccountTypes.FirstOrDefault(x => x.Aty_Name == "Doktor").Aty_Id;
-            var list = _dbContext.Accounts.Where(x => x.Acc_AtyId == doctorAccountTypeId).ToList();
+            var list = _dbContext.Accounts.Where(x => x.Acc_AtyId == doctorAccountTypeId && x.Acc_IsActive).ToList();
             if(list is null)
+            {
+                return new List<UserDto>();
+            }
+
+            List<UserDto> listUserDto = new List<UserDto>();
+
+            foreach (var account in list)
+            {
+                listUserDto.Add(_mapper.Map<UserDto>(account));
+            }
+
+            return listUserDto;
+        }
+        public List<UserDto> GetPatientsList()
+        {
+            var patientAccountTypeId = _dbContext.AccountTypes.FirstOrDefault(x => x.Aty_Name == "Pacjent").Aty_Id;
+            var list = _dbContext.Accounts.Where(x => x.Acc_AtyId == patientAccountTypeId && x.Acc_IsActive).ToList();
+            if (list is null)
             {
                 return new List<UserDto>();
             }

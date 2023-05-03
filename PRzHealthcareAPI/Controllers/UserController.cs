@@ -42,6 +42,12 @@ namespace PRzHealthcareAPI.Controllers
             var doctors = _userService.GetDoctorsList();
             return Ok(doctors);
         }
+        [HttpGet("getpatientslist")]
+        public ActionResult GetPatientsList()
+        {
+            var patients = _userService.GetPatientsList();
+            return Ok(patients);
+        }
 
         [AllowAnonymous]
         [HttpGet("confirm-mail")]

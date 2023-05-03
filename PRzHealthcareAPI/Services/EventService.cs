@@ -20,7 +20,8 @@ namespace PRzHealthcareAPI.Services
         List<EventDto> GetDoctorEvents(int accountId);
         List<EventDto> GetNurseEvents();
         void TakeTerm(EventDto dto, string accountId);
-        void CancelTerm(int eventId, string accountId);
+        void CancelTerm(EventDto dto, string accountId);
+        void FinishTerm(EventDto dto, string accountId);
     }
     public class EventService : IEventService
     {
@@ -28,13 +29,15 @@ namespace PRzHealthcareAPI.Services
         private readonly AuthenticationSettings _authentication;
         private readonly EmailSettings _emailSettings;
         private readonly IMapper _mapper;
+        private readonly ICertificateService _certificateService;
 
-        public EventService(HealthcareDbContext dbContext, AuthenticationSettings authentication,EmailSettings emailSettings, IMapper mapper)
+        public EventService(HealthcareDbContext dbContext, AuthenticationSettings authentication,EmailSettings emailSettings, IMapper mapper, ICertificateService certificateService)
         {
             _dbContext = dbContext;
             _authentication = authentication;
-            this._emailSettings = emailSettings;
+            _emailSettings = emailSettings;
             _mapper = mapper;
+            _certificateService = certificateService;
         }
 
         public List<EventDto> GetAvailableDates(string selectedDate, string selectedDoctorId)
@@ -142,10 +145,42 @@ namespace PRzHealthcareAPI.Services
 
             Tools.SendVisitConfirmation(_emailSettings,user, changedEvent, _dbContext.NotificationTypes.FirstOrDefault(x => x.Nty_Name == "Potwierdzenie wizyty w klinice PRz Healthcare"));
         }
-
-        public void CancelTerm(int eventId, string accountId)
+        public void FinishTerm(EventDto dto, string accountId)
         {
-            var canceledEvent = _dbContext.Events.FirstOrDefault(x => x.Eve_Id == eventId);
+            var finishEventTypeId = _dbContext.EventTypes.FirstOrDefault(x => x.Ety_Name == "Zakończony").Ety_Id;
+            var finishedEvent = _dbContext.Events.FirstOrDefault(x => x.Eve_Id == dto.Id);
+            if (finishedEvent == null)
+            {
+                throw new NotFoundException("Wydarzenie nie istnieje.");
+            }
+            var user = _dbContext.Accounts.FirstOrDefault(x => x.Acc_Id.ToString() == accountId);
+            if (user == null)
+            {
+                throw new NotFoundException("Nie znaleziono użytkownika.");
+            }
+
+            finishedEvent.Eve_AccId = null;
+            finishedEvent.Eve_Description = "Zakończony";
+            finishedEvent.Eve_Type = finishEventTypeId;
+            finishedEvent.Eve_ModifiedAccId = user.Acc_Id;
+            finishedEvent.Eve_ModifiedDate = DateTime.Now;
+            finishedEvent.Eve_InsertedDate = DateTime.Now;
+            finishedEvent.Eve_InsertedAccId = user.Acc_Id;
+            finishedEvent.Eve_VacId = null;
+
+            _dbContext.Update(finishedEvent);
+            _dbContext.SaveChangesAsync();
+
+
+            MemoryStream mailAttachment = _certificateService.PrintCOVIDCertificateToMemoryStream(dto);
+
+            Tools.SendVisitCertificate(_emailSettings, user, finishedEvent, _dbContext.NotificationTypes.FirstOrDefault(x => x.Nty_Name == "Potwierdzenie odbycia wizyty w klinice PRz Healthcare"), mailAttachment);
+        }
+
+        public void CancelTerm(EventDto dto, string accountId)
+        {
+            var freeEventTypeId = _dbContext.EventTypes.FirstOrDefault(x => x.Ety_Name == "Wolny").Ety_Id;
+            var canceledEvent = _dbContext.Events.FirstOrDefault(x => x.Eve_Id == dto.Id);
             if(canceledEvent == null) 
             {
                 throw new NotFoundException("Wydarzenie nie istnieje.");
@@ -158,6 +193,7 @@ namespace PRzHealthcareAPI.Services
 
             canceledEvent.Eve_AccId = null;
             canceledEvent.Eve_Description = "Dostępny";
+            canceledEvent.Eve_Type = freeEventTypeId;
             canceledEvent.Eve_ModifiedAccId = user.Acc_Id;
             canceledEvent.Eve_ModifiedDate = DateTime.Now;
             canceledEvent.Eve_InsertedDate = DateTime.Now;

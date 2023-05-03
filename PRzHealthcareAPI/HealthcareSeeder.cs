@@ -75,6 +75,10 @@ namespace PRzHealthcareAPI
                 {
                     Ety_Name = "Nieobecność",
                 },
+                new EventType()
+                {
+                    Ety_Name = "Zakończony",
+                },
             };
             return eventTypes;
         }
@@ -258,6 +262,46 @@ namespace PRzHealthcareAPI
 <p>Jeśli nie rejestrowałeś się w naszym serwisie, zignoruj tę wiadomość.</p>
 <p>Wiadomość wygenerowana automatycznie, prosimy na nią nie odpowiadać.</p>
 <p>PRz Healthcare<br>Rzesz&oacute;w, ul. Wincentego Pola 2</p>"
+                },
+                new NotificationType()
+                {
+                    Nty_Name = "Przypomnienie hasła w systemie PRz Healthcare",
+                    Nty_Template = @"<p>Witaj, @@NAZWA</p>
+<p>Aby potwierdzić zmianę hasła do konta, <a href=""@@LINK"" target=""_blank"">kliknij tutaj</a>.</p>
+<p>&nbsp;</p>
+<p>Wiadomość wygenerowana automatycznie, prosimy na nią nie odpowiadać.</p>
+<p>PRz Healthcare<br />Rzesz&oacute;w, ul. Wincentego Pola 2<br />tel.: +48 17 865 11 00</p>"
+                },
+                new NotificationType()
+                {
+                    Nty_Name = "Potwierdzenie wizyty w klinice PRz Healthcare",
+                    Nty_Template = @"<p>Witaj, @@NAZWA</p>
+<p>Twoja wizyta w klinice PRz Healthcare została potwierdzona.</p>
+<p>Termin wizyty: @@TERMIN.</p>
+<p>&nbsp;</p>
+<p>W razie dodatkowych pytań, prosimy o kontakt telefoniczny.</p>
+<p>Wiadomość wygenerowana automatycznie, prosimy na nią nie odpowiadać.</p>
+<p>PRz Healthcare<br />Rzesz&oacute;w, ul. Wincentego Pola 2<br />tel.: +48 17 865 11 00</p>"
+                },
+                new NotificationType()
+                {
+                    Nty_Name = "Anulowanie wizyty w klinice PRz Healthcare",
+                    Nty_Template = @"<p>Witaj, @@NAZWA</p>
+<p>Twoja wizyta w klinice PRz Healthcare w terminie: @@TERMIN została anulowana.</p>
+<p>W razie dodatkowych pytań, prosimy o kontakt telefoniczny.</p>
+<p>&nbsp;</p>
+<p>Wiadomość wygenerowana automatycznie, prosimy na nią nie odpowiadać.</p>
+<p>PRz Healthcare<br />Rzesz&oacute;w, ul. Wincentego Pola 2<br />tel.: +48 17 865 11 00</p>"
+                },
+                new NotificationType()
+                {
+                    Nty_Name = "Potwierdzenie odbycia wizyty w klinice PRz Healthcare",
+                    Nty_Template = @"<p>Witaj, @@NAZWA</p>
+<p>Potwierdzamy odbycie wizyty w klinice PRz Healthcare.<br />W załączniku znajduje się Państwa certyfikat szczepienia.</p>
+<p>W razie dodatkowych pytań, prosimy o kontakt telefoniczny.</p>
+<p>&nbsp;</p>
+<p>Wiadomość wygenerowana automatycznie, prosimy na nią nie odpowiadać.</p>
+<p>PRz Healthcare<br />Rzesz&oacute;w, ul. Wincentego Pola 2<br />tel.: +48 17 865 11 00</p>"
                 },
             };
             return notificationTypes;

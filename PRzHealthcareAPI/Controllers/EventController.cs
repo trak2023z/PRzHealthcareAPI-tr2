@@ -56,9 +56,8 @@ namespace PRzHealthcareAPI.Controllers
             return Ok(availableEvents);
         }
 
-        [AllowAnonymous]
         [HttpPatch("takeeventterm")]
-        public ActionResult TakeTerm(EventDto dto)
+        public ActionResult TakeTerm([FromBody] EventDto dto)
         {
             string accountId = "";
             if (HttpContext.User.Identity is ClaimsIdentity identity)
@@ -67,6 +66,30 @@ namespace PRzHealthcareAPI.Controllers
             }
 
             _eventService.TakeTerm(dto, accountId);
+            return Ok();
+        }
+        [HttpPatch("finishterm")]
+        public ActionResult FinishTerm([FromBody] EventDto dto)
+        {
+            string accountId = "";
+            if (HttpContext.User.Identity is ClaimsIdentity identity)
+            {
+                accountId = identity.FindFirst(ClaimTypes.SerialNumber).Value;
+            }
+
+            _eventService.FinishTerm(dto, accountId);
+            return Ok();
+        }
+        [HttpPatch("cancelterm")]
+        public ActionResult CancelTerm([FromBody] EventDto dto)
+        {
+            string accountId = "";
+            if (HttpContext.User.Identity is ClaimsIdentity identity)
+            {
+                accountId = identity.FindFirst(ClaimTypes.SerialNumber).Value;
+            }
+
+            _eventService.CancelTerm(dto, accountId);
             return Ok();
         }
 
