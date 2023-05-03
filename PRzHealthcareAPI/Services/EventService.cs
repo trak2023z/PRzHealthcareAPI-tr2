@@ -31,7 +31,7 @@ namespace PRzHealthcareAPI.Services
         private readonly IMapper _mapper;
         private readonly ICertificateService _certificateService;
 
-        public EventService(HealthcareDbContext dbContext, AuthenticationSettings authentication,EmailSettings emailSettings, IMapper mapper, ICertificateService certificateService)
+        public EventService(HealthcareDbContext dbContext, AuthenticationSettings authentication, EmailSettings emailSettings, IMapper mapper, ICertificateService certificateService)
         {
             _dbContext = dbContext;
             _authentication = authentication;
@@ -49,7 +49,7 @@ namespace PRzHealthcareAPI.Services
             {
                 throw new NotFoundException("Brak wolnych terminów.");
             }
-            if(Convert.ToDateTime(selectedDate).Date == DateTime.Now.Date)
+            if (Convert.ToDateTime(selectedDate).Date == DateTime.Now.Date)
             {
                 events = events.Where(x => x.Eve_TimeFrom > DateTime.Now.AddMinutes(20)).ToList();
             }
@@ -125,16 +125,30 @@ namespace PRzHealthcareAPI.Services
             {
                 throw new NotFoundException("Nie znaleziono użytkownika.");
             }
-            if(changedEvent.Eve_Type == busyEventTypeId)
+            if (changedEvent.Eve_Type == busyEventTypeId)
             {
                 throw new NotFoundException("Termin został zajęty.");
+            }
+
+            var selectedVaccination = _dbContext.Vaccinations.FirstOrDefault(x => x.Vac_Id == dto.VacId);
+            var finishEventTypeId = _dbContext.EventTypes.FirstOrDefault(x => x.Ety_Name == "Zakończony").Ety_Id;
+            var lastUserVaccination = _dbContext.Events.Where(x => x.Eve_AccId == user.Acc_Id && x.Eve_Type == finishEventTypeId).ToList();
+            if (lastUserVaccination.Any(x => x.Eve_TimeFrom.AddDays(selectedVaccination.Vac_DaysBetweenVacs) > dto.TimeFrom))
+            {
+                throw new BadRequestException("Prosimy odczekać odstęp czasu opisany w zaświadczeniu. W razie problemów prosimy o kontakt telefoniczny.");
+            }
+
+            var lastUserVaccinationRequest = _dbContext.Events.Where(x => x.Eve_AccId == user.Acc_Id && x.Eve_Type == busyEventTypeId).ToList();
+            if (lastUserVaccinationRequest.Any())
+            {
+                throw new BadRequestException("Nie ma możliwości rejestracji na dwie oddzielne wizyty.");
             }
 
             changedEvent.Eve_AccId = Convert.ToInt32(accountId);
             changedEvent.Eve_Type = busyEventTypeId;
             changedEvent.Eve_DoctorId = dto.DoctorId;
             changedEvent.Eve_VacId = dto.VacId;
-            changedEvent.Eve_Description = dto.Description != null? dto.Description : "";
+            changedEvent.Eve_Description = dto.Description != null ? dto.Description : "";
             changedEvent.Eve_ModifiedAccId = user.Acc_Id;
             changedEvent.Eve_ModifiedDate = DateTime.Now;
             changedEvent.Eve_InsertedDate = DateTime.Now;
@@ -143,7 +157,7 @@ namespace PRzHealthcareAPI.Services
             _dbContext.Update(changedEvent);
             _dbContext.SaveChanges();
 
-            Tools.SendVisitConfirmation(_emailSettings,user, changedEvent, _dbContext.NotificationTypes.FirstOrDefault(x => x.Nty_Name == "Potwierdzenie wizyty w klinice PRz Healthcare"));
+            Tools.SendVisitConfirmation(_emailSettings, user, changedEvent, _dbContext.NotificationTypes.FirstOrDefault(x => x.Nty_Name == "Potwierdzenie wizyty w klinice PRz Healthcare"));
         }
         public void FinishTerm(EventDto dto, string accountId)
         {
@@ -181,7 +195,7 @@ namespace PRzHealthcareAPI.Services
         {
             var freeEventTypeId = _dbContext.EventTypes.FirstOrDefault(x => x.Ety_Name == "Wolny").Ety_Id;
             var canceledEvent = _dbContext.Events.FirstOrDefault(x => x.Eve_Id == dto.Id);
-            if(canceledEvent == null) 
+            if (canceledEvent == null)
             {
                 throw new NotFoundException("Wydarzenie nie istnieje.");
             }
@@ -224,6 +238,10 @@ namespace PRzHealthcareAPI.Services
 
             foreach (var doctor in doctorsList)
             {
+                //if(doctor.Acc_Id == 16)
+                //{
+                //    continue;
+                //}
                 for (int i = 0; i < 30; i++)
                 {
 
@@ -240,7 +258,7 @@ namespace PRzHealthcareAPI.Services
                             {
                                 if (new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.AddDays(i).Day, 0, 0, 0).DayOfWeek != DayOfWeek.Sunday)
                                 {
-                                    var eventsList = _dbContext.Events.Where(x => x.Eve_DoctorId == doctor.Acc_Id && x.Eve_TimeFrom == actualDate && x.Eve_TimeTo == actualDate.AddMinutes(15)).ToList();
+                                    var eventsList = _dbContext.Events.Where(x => x.Eve_DoctorId == doctor.Acc_Id && x.Eve_TimeFrom == actualDate).ToList();
 
                                     if (!eventsList.Any())
                                     {
@@ -305,9 +323,9 @@ namespace PRzHealthcareAPI.Services
                             {
                                 if (new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.AddDays(i).Day, 0, 0, 0).DayOfWeek != DayOfWeek.Sunday)
                                 {
-                                    var eventsList = _dbContext.Events.Where(x => x.Eve_TimeFrom >= DateTime.Now.AddDays(i)).ToList();
+                                    var eventsList = _dbContext.Events.Where(x => x.Eve_DoctorId == doctor.Acc_Id && x.Eve_TimeFrom >= DateTime.Now.AddDays(i)).ToList();
 
-                                    if (!eventsList.Any(x => x.Eve_TimeFrom == actualDate && x.Eve_TimeTo == actualDate.AddMinutes(15)))
+                                    if (!eventsList.Any(x => x.Eve_TimeFrom == actualDate && x.Eve_DoctorId == doctor.Acc_Id))
                                     {
                                         Event seedEvent = new Event();
                                         seedEvent = new Event()
