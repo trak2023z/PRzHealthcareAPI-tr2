@@ -9,14 +9,17 @@ using PRzHealthcareAPI.Helpers;
 using PRzHealthcareAPI.Models;
 using PRzHealthcareAPI.Models.DTO;
 using PublicHoliday;
+using System.Globalization;
 
 namespace PRzHealthcareAPI.Services
 {
     public interface IEventService
     {
         bool SeedDates();
+        EventDto GetSelectedEvent(int eventId);
         List<EventDto> GetAvailableDates(string selectedDate, string selectedDoctorId);
         List<EventDto> GetUserEvents(int accountId);
+        List<EventDto> GetBusyEvents(int accountId);
         List<EventDto> GetDoctorEvents(int accountId);
         List<EventDto> GetNurseEvents();
         void TakeTerm(EventDto dto, string accountId);
@@ -39,6 +42,8 @@ namespace PRzHealthcareAPI.Services
             _mapper = mapper;
             _certificateService = certificateService;
         }
+
+
 
         public List<EventDto> GetAvailableDates(string selectedDate, string selectedDoctorId)
         {
@@ -65,6 +70,8 @@ namespace PRzHealthcareAPI.Services
 
         }
 
+
+
         public List<EventDto> GetUserEvents(int accountId)
         {
             var busyEventTypeId = _dbContext.EventTypes.FirstOrDefault(x => x.Ety_Name == "Zajęty").Ety_Id;
@@ -78,6 +85,47 @@ namespace PRzHealthcareAPI.Services
                 eventDtos.Add(eventDto);
             }
             return eventDtos;
+
+        }
+        public List<EventDto> GetBusyEvents(int accountId)
+        {
+            var freeEventTypeId = _dbContext.EventTypes.FirstOrDefault(x => x.Ety_Name == "Wolny").Ety_Id;
+            var events = _dbContext.Events.Where(x => x.Eve_Type != freeEventTypeId && x.Eve_TimeTo > DateTime.Now).ToList();
+
+            List<EventDto> eventDtos = new List<EventDto>();
+
+            foreach (var ev in events)
+            {
+                var eventDto = _mapper.Map<EventDto>(ev);
+                if (eventDto.AccId == accountId)
+                {
+                    eventDto.Description = "Twoja wizyta";
+                }
+                else
+                {
+                    eventDto.AccId = 0;
+                    eventDto.Description = "Zajęty";
+                }
+
+                eventDtos.Add(eventDto);
+            }
+            return eventDtos;
+
+        }
+        public EventDto GetSelectedEvent(int eventId)
+        {
+            var selectedEvent = _dbContext.Events.FirstOrDefault(x => x.Eve_Id == eventId);
+            if (selectedEvent == null)
+            {
+                throw new NotFoundException("Nie znaleziono odpowiedniego wydarzenia.");
+            }
+
+            var eventDto = _mapper.Map<EventDto>(selectedEvent);
+
+            eventDto.DateFrom = Convert.ToDateTime(eventDto.TimeFrom);
+            eventDto.DateTo = Convert.ToDateTime(eventDto.TimeTo);
+
+            return eventDto;
 
         }
         public List<EventDto> GetDoctorEvents(int accountId)
@@ -99,7 +147,8 @@ namespace PRzHealthcareAPI.Services
         {
             var busyEventTypeId = _dbContext.EventTypes.FirstOrDefault(x => x.Ety_Name == "Zajęty").Ety_Id;
             var awayEventTypeId = _dbContext.EventTypes.FirstOrDefault(x => x.Ety_Name == "Nieobecność").Ety_Id;
-            var events = _dbContext.Events.Where(x => (x.Eve_Type == busyEventTypeId || x.Eve_Type == awayEventTypeId)).ToList();
+            var finishedEventTypeId = _dbContext.EventTypes.FirstOrDefault(x => x.Ety_Name == "Zakończony").Ety_Id;
+            var events = _dbContext.Events.Where(x => (x.Eve_Type == busyEventTypeId || x.Eve_Type == awayEventTypeId || x.Eve_Type == finishedEventTypeId)).ToList();
 
             List<EventDto> eventDtos = new List<EventDto>();
 
@@ -115,12 +164,24 @@ namespace PRzHealthcareAPI.Services
         public void TakeTerm(EventDto dto, string accountId)
         {
             var busyEventTypeId = _dbContext.EventTypes.FirstOrDefault(x => x.Ety_Name == "Zajęty").Ety_Id;
-            var changedEvent = _dbContext.Events.FirstOrDefault(x => x.Eve_TimeFrom == dto.TimeFrom && x.Eve_DoctorId == dto.DoctorId);
+            dto.DateFrom = Convert.ToDateTime(dto.DateFrom).AddHours(2);
+            TimeSpan timeFromSpan = TimeSpan.Parse(dto.TimeFrom);
+            dto.DateFrom = Convert.ToDateTime(dto.DateFrom).Add(timeFromSpan);
+
+            var changedEvent = _dbContext.Events.FirstOrDefault(x => x.Eve_TimeFrom == dto.DateFrom && x.Eve_DoctorId == dto.DoctorId);
             if (changedEvent == null)
             {
-                throw new NotFoundException("Nie znaleziono odpowiedniego terminu.");
+                throw new NotFoundException("Nie znaleziono odpowiedniego terminu. W razie problemów prosimy o kontakt telefoniczny.");
             }
-            var user = _dbContext.Accounts.FirstOrDefault(x => x.Acc_Id.ToString() == accountId);
+            Account user = new Account();
+            if (dto.AccId == 0)
+            {
+                user = _dbContext.Accounts.FirstOrDefault(x => x.Acc_Id.ToString() == accountId);
+            }
+            else
+            {
+                user = _dbContext.Accounts.FirstOrDefault(x => x.Acc_Id == dto.AccId);
+            }
             if (user == null)
             {
                 throw new NotFoundException("Nie znaleziono użytkownika.");
@@ -133,10 +194,12 @@ namespace PRzHealthcareAPI.Services
             var selectedVaccination = _dbContext.Vaccinations.FirstOrDefault(x => x.Vac_Id == dto.VacId);
             var finishEventTypeId = _dbContext.EventTypes.FirstOrDefault(x => x.Ety_Name == "Zakończony").Ety_Id;
             var lastUserVaccination = _dbContext.Events.Where(x => x.Eve_AccId == user.Acc_Id && x.Eve_Type == finishEventTypeId).ToList();
-            if (lastUserVaccination.Any(x => x.Eve_TimeFrom.AddDays(selectedVaccination.Vac_DaysBetweenVacs) > dto.TimeFrom))
-            {
-                throw new BadRequestException("Prosimy odczekać odstęp czasu opisany w zaświadczeniu. W razie problemów prosimy o kontakt telefoniczny.");
-            }
+
+            //todo: odkomentuj na koniec
+            //if (lastUserVaccination.Any(x => x.Eve_TimeFrom.AddDays(selectedVaccination.Vac_DaysBetweenVacs) > dto.TimeFrom))
+            //{
+            //    throw new BadRequestException("Prosimy odczekać odstęp czasu opisany w zaświadczeniu. W razie problemów prosimy o kontakt telefoniczny.");
+            //}
 
             var lastUserVaccinationRequest = _dbContext.Events.Where(x => x.Eve_AccId == user.Acc_Id && x.Eve_Type == busyEventTypeId).ToList();
             if (lastUserVaccinationRequest.Any())
@@ -144,20 +207,33 @@ namespace PRzHealthcareAPI.Services
                 throw new BadRequestException("Nie ma możliwości rejestracji na dwie oddzielne wizyty.");
             }
 
-            changedEvent.Eve_AccId = Convert.ToInt32(accountId);
+            changedEvent.Eve_AccId = user.Acc_Id;
             changedEvent.Eve_Type = busyEventTypeId;
             changedEvent.Eve_DoctorId = dto.DoctorId;
             changedEvent.Eve_VacId = dto.VacId;
-            changedEvent.Eve_Description = dto.Description != null ? dto.Description : "";
-            changedEvent.Eve_ModifiedAccId = user.Acc_Id;
+            changedEvent.Eve_Description = "Szczepienie";
+            changedEvent.Eve_ModifiedAccId = Convert.ToInt32(accountId);
             changedEvent.Eve_ModifiedDate = DateTime.Now;
             changedEvent.Eve_InsertedDate = DateTime.Now;
-            changedEvent.Eve_InsertedAccId = user.Acc_Id;
+            changedEvent.Eve_InsertedAccId = Convert.ToInt32(accountId);
 
             _dbContext.Update(changedEvent);
             _dbContext.SaveChanges();
 
             Tools.SendVisitConfirmation(_emailSettings, user, changedEvent, _dbContext.NotificationTypes.FirstOrDefault(x => x.Nty_Name == "Potwierdzenie wizyty w klinice PRz Healthcare"));
+            Notification notif = new()
+            {
+                Not_EveId = changedEvent.Eve_Id,
+                Not_NtyId = _dbContext.NotificationTypes.FirstOrDefault(x => x.Nty_Name == "Potwierdzenie wizyty w klinice PRz Healthcare").Nty_Id,
+                Not_SendTime = DateTime.Now,
+                Not_IsActive = true,
+                Not_InsertedDate = DateTime.Now,
+                Not_InsertedAccId = user.Acc_Id,
+                Not_ModifiedDate = DateTime.Now,
+                Not_ModifiedAccId = user.Acc_Id,
+            };
+            _dbContext.Notifications.Add(notif);
+            _dbContext.SaveChanges();
         }
         public void FinishTerm(EventDto dto, string accountId)
         {
@@ -167,20 +243,17 @@ namespace PRzHealthcareAPI.Services
             {
                 throw new NotFoundException("Wydarzenie nie istnieje.");
             }
-            var user = _dbContext.Accounts.FirstOrDefault(x => x.Acc_Id.ToString() == accountId);
+            var user = _dbContext.Accounts.FirstOrDefault(x => x.Acc_Id == dto.AccId);
             if (user == null)
             {
                 throw new NotFoundException("Nie znaleziono użytkownika.");
             }
 
-            finishedEvent.Eve_AccId = null;
-            finishedEvent.Eve_Description = "Zakończony";
             finishedEvent.Eve_Type = finishEventTypeId;
-            finishedEvent.Eve_ModifiedAccId = user.Acc_Id;
+            finishedEvent.Eve_ModifiedAccId = Convert.ToInt32(accountId);
             finishedEvent.Eve_ModifiedDate = DateTime.Now;
             finishedEvent.Eve_InsertedDate = DateTime.Now;
-            finishedEvent.Eve_InsertedAccId = user.Acc_Id;
-            finishedEvent.Eve_VacId = null;
+            finishedEvent.Eve_InsertedAccId = Convert.ToInt32(accountId);
 
             _dbContext.Update(finishedEvent);
             _dbContext.SaveChangesAsync();
@@ -189,6 +262,19 @@ namespace PRzHealthcareAPI.Services
             MemoryStream mailAttachment = _certificateService.PrintCOVIDCertificateToMemoryStream(dto);
 
             Tools.SendVisitCertificate(_emailSettings, user, finishedEvent, _dbContext.NotificationTypes.FirstOrDefault(x => x.Nty_Name == "Potwierdzenie odbycia wizyty w klinice PRz Healthcare"), mailAttachment);
+            Notification notif = new()
+            {
+                Not_EveId = finishedEvent.Eve_Id,
+                Not_NtyId = _dbContext.NotificationTypes.FirstOrDefault(x => x.Nty_Name == "Potwierdzenie odbycia wizyty w klinice PRz Healthcare").Nty_Id,
+                Not_SendTime = DateTime.Now,
+                Not_IsActive = true,
+                Not_InsertedDate = DateTime.Now,
+                Not_InsertedAccId = Convert.ToInt32(accountId),
+                Not_ModifiedDate = DateTime.Now,
+                Not_ModifiedAccId = Convert.ToInt32(accountId),
+            };
+            _dbContext.Notifications.Add(notif);
+            _dbContext.SaveChanges();
         }
 
         public void CancelTerm(EventDto dto, string accountId)
@@ -199,7 +285,7 @@ namespace PRzHealthcareAPI.Services
             {
                 throw new NotFoundException("Wydarzenie nie istnieje.");
             }
-            var user = _dbContext.Accounts.FirstOrDefault(x => x.Acc_Id.ToString() == accountId);
+            var user = _dbContext.Accounts.FirstOrDefault(x => x.Acc_Id == dto.AccId);
             if (user == null)
             {
                 throw new NotFoundException("Nie znaleziono użytkownika.");
@@ -208,16 +294,29 @@ namespace PRzHealthcareAPI.Services
             canceledEvent.Eve_AccId = null;
             canceledEvent.Eve_Description = "Dostępny";
             canceledEvent.Eve_Type = freeEventTypeId;
-            canceledEvent.Eve_ModifiedAccId = user.Acc_Id;
+            canceledEvent.Eve_ModifiedAccId = Convert.ToInt32(accountId);
             canceledEvent.Eve_ModifiedDate = DateTime.Now;
             canceledEvent.Eve_InsertedDate = DateTime.Now;
-            canceledEvent.Eve_InsertedAccId = user.Acc_Id;
+            canceledEvent.Eve_InsertedAccId = Convert.ToInt32(accountId);
             canceledEvent.Eve_VacId = null;
 
             _dbContext.Update(canceledEvent);
             _dbContext.SaveChangesAsync();
 
             Tools.SendVisitCancellation(_emailSettings, user, canceledEvent, _dbContext.NotificationTypes.FirstOrDefault(x => x.Nty_Name == "Anulowanie wizyty w klinice PRz Healthcare"));
+            Notification notif = new()
+            {
+                Not_EveId = canceledEvent.Eve_Id,
+                Not_NtyId = _dbContext.NotificationTypes.FirstOrDefault(x => x.Nty_Name == "Anulowanie wizyty w klinice PRz Healthcare").Nty_Id,
+                Not_SendTime = DateTime.Now,
+                Not_IsActive = true,
+                Not_InsertedDate = DateTime.Now,
+                Not_InsertedAccId = Convert.ToInt32(accountId),
+                Not_ModifiedDate = DateTime.Now,
+                Not_ModifiedAccId = Convert.ToInt32(accountId),
+            };
+            _dbContext.Notifications.Add(notif);
+            _dbContext.SaveChanges();
         }
 
         public bool SeedDates()

@@ -99,7 +99,7 @@ namespace PRzHealthcareAPI.Migrations
 
                     b.HasIndex("Acc_AtyId");
 
-                    b.ToTable("Accounts");
+                    b.ToTable("Accounts", (string)null);
                 });
 
             modelBuilder.Entity("PRzHealthcareAPI.Models.AccountType", b =>
@@ -117,7 +117,7 @@ namespace PRzHealthcareAPI.Migrations
 
                     b.HasKey("Aty_Id");
 
-                    b.ToTable("AccountTypes");
+                    b.ToTable("AccountTypes", (string)null);
                 });
 
             modelBuilder.Entity("PRzHealthcareAPI.Models.BinData", b =>
@@ -151,7 +151,7 @@ namespace PRzHealthcareAPI.Migrations
 
                     b.HasKey("Bin_Id");
 
-                    b.ToTable("BinData");
+                    b.ToTable("BinData", (string)null);
                 });
 
             modelBuilder.Entity("PRzHealthcareAPI.Models.Certificate", b =>
@@ -189,7 +189,7 @@ namespace PRzHealthcareAPI.Migrations
 
                     b.HasIndex("Cer_BinId");
 
-                    b.ToTable("Certificates");
+                    b.ToTable("Certificates", (string)null);
                 });
 
             modelBuilder.Entity("PRzHealthcareAPI.Models.Event", b =>
@@ -247,7 +247,7 @@ namespace PRzHealthcareAPI.Migrations
 
                     b.HasIndex("Eve_VacId");
 
-                    b.ToTable("Events");
+                    b.ToTable("Events", (string)null);
                 });
 
             modelBuilder.Entity("PRzHealthcareAPI.Models.EventType", b =>
@@ -265,7 +265,7 @@ namespace PRzHealthcareAPI.Migrations
 
                     b.HasKey("Ety_Id");
 
-                    b.ToTable("EventTypes");
+                    b.ToTable("EventTypes", (string)null);
                 });
 
             modelBuilder.Entity("PRzHealthcareAPI.Models.Notification", b =>
@@ -306,7 +306,7 @@ namespace PRzHealthcareAPI.Migrations
 
                     b.HasIndex("Not_NtyId");
 
-                    b.ToTable("Notifications");
+                    b.ToTable("Notifications", (string)null);
                 });
 
             modelBuilder.Entity("PRzHealthcareAPI.Models.NotificationType", b =>
@@ -328,7 +328,7 @@ namespace PRzHealthcareAPI.Migrations
 
                     b.HasKey("Nty_Id");
 
-                    b.ToTable("NotificationTypes");
+                    b.ToTable("NotificationTypes", (string)null);
                 });
 
             modelBuilder.Entity("PRzHealthcareAPI.Models.Vaccination", b =>
@@ -374,7 +374,7 @@ namespace PRzHealthcareAPI.Migrations
 
                     b.HasIndex("Vac_PhotoId");
 
-                    b.ToTable("Vaccinations");
+                    b.ToTable("Vaccinations", (string)null);
                 });
 
             modelBuilder.Entity("PRzHealthcareAPI.Models.Account", b =>

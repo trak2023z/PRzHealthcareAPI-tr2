@@ -6,8 +6,10 @@ namespace PRzHealthcareAPI.Models.DTO
     {
         public int Id { get; set; }
         public int AccId { get; set; }
-        public DateTime TimeFrom { get; set; }
-        public DateTime TimeTo { get; set; }
+        public DateTime? DateFrom { get; set; }
+        public DateTime? DateTo { get; set; }
+        public string? TimeFrom { get; set; }
+        public string? TimeTo { get; set; }
         public int Type { get; set; }
         public int DoctorId { get; set; }
         public int VacId { get; set; }

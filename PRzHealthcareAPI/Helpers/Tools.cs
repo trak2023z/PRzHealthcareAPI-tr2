@@ -99,7 +99,7 @@ namespace PRzHealthcareAPI.Helpers
                 objeto_mail.IsBodyHtml = true;
                 objeto_mail.Body = notification.Nty_Template
                     .Replace("@@NAZWA", $@"{user.Acc_Firstname} {user.Acc_Lastname}")
-                    .Replace("@@TERMIN", $@"{newEvent.Eve_TimeFrom.ToLongDateString()}");
+                    .Replace("@@TERMIN", $@"{newEvent.Eve_TimeFrom}");
 
                 client.Send(objeto_mail);
 
@@ -166,7 +166,8 @@ namespace PRzHealthcareAPI.Helpers
                 objeto_mail.Body = notification.Nty_Template
                     .Replace("@@NAZWA", $@"{user.Acc_Firstname} {user.Acc_Lastname}");
 
-                Attachment attachment = new Attachment(attachmentFile, $@"{user.Acc_Firstname}{user.Acc_Lastname}{finishedEvent.Eve_ModifiedDate.ToShortDateString().Replace("-","_")}");
+                //Attachment attachment = new Attachment(attachmentFile, $@"{user.Acc_Firstname}{user.Acc_Lastname}{finishedEvent.Eve_ModifiedDate.ToShortDateString().Replace(".","_")}.pdf");
+                Attachment attachment = new Attachment(Path.Combine(Path.GetTempPath(), $@"certificate{finishedEvent.Eve_Id}.pdf"));
                 objeto_mail.Attachments.Add(attachment);
 
                 client.Send(objeto_mail);

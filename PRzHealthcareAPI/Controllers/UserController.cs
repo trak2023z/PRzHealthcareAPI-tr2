@@ -35,6 +35,12 @@ namespace PRzHealthcareAPI.Controllers
             var loggedUser = _userService.GenerateToken(dto);
             return Ok(loggedUser);
         }
+        [HttpGet("getselecteduser/{userId}")]
+        public ActionResult GetSelectedUser([FromQuery] int userId)
+        {
+            var doctors = _userService.GetSelectedUser(userId);
+            return Ok(doctors);
+        }
 
         [HttpGet("getdoctorslist")]
         public ActionResult GetDoctorsList()

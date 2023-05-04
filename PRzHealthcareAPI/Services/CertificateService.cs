@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using PRzHealthcareAPI.Exceptions;
 using PRzHealthcareAPI.Models;
 using PRzHealthcareAPI.Models.DTO;
+using System.IO;
 
 namespace PRzHealthcareAPI.Services
 {
@@ -91,6 +92,13 @@ namespace PRzHealthcareAPI.Services
                 writer.LoadReport(reportStream);
                 MemoryStream memoryStream = new MemoryStream();
                 writer.Save(memoryStream, format);
+
+                string fileName = Path.Combine(Path.GetTempPath(), $@"certificate{dto.Id}.pdf");
+                using (FileStream fileStream = new FileStream(fileName, FileMode.Create))
+                {
+                    memoryStream.WriteTo(fileStream);
+                    fileStream.Dispose();
+                }
 
                 return memoryStream;
             }

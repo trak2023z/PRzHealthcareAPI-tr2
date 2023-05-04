@@ -58,6 +58,9 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IVaccinationService, VaccinationService>();
 builder.Services.AddScoped<IEventService, EventService>();
 builder.Services.AddScoped<ICertificateService, CertificateService>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddScoped<ICaptchaService, CaptchaService>();
+builder.Services.AddHttpClient<CaptchaService>();
 builder.Services.AddScoped<HealthcareSeeder>();
 
 builder.Services.AddScoped<IPasswordHasher<Account>, PasswordHasher<Account>>();

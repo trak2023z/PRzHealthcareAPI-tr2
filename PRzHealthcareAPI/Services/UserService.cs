@@ -10,6 +10,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
+using System.Security.Principal;
 using System.Text;
 
 namespace PRzHealthcareAPI.Services
@@ -25,6 +26,7 @@ namespace PRzHealthcareAPI.Services
         Task<string> ResetPasswordRequest(string email);
         Task<string> ResetPasswordCheckHashCode(string hashcode);
         List<UserDto> GetPatientsList();
+        UserDto GetSelectedUser(int userId);
     }
 
     public class UserService : IUserService
@@ -67,7 +69,21 @@ namespace PRzHealthcareAPI.Services
                 await _dbContext.SaveChangesAsync();
 
                 Tools.SendRegistrationMail(_emailSettings, newUser, _dbContext.NotificationTypes.FirstOrDefault(x => x.Nty_Name == "Rejestracja użytkownika w systemie PRz Healthcare"));
-                return "";
+                Notification notif = new()
+                {
+                    Not_EveId = _dbContext.Events.FirstOrDefault().Eve_Id,
+                    Not_NtyId = _dbContext.NotificationTypes.FirstOrDefault(x => x.Nty_Name == "Rejestracja użytkownika w systemie PRz Healthcare").Nty_Id,
+                    Not_SendTime = DateTime.Now,
+                    Not_IsActive = true,
+                    Not_InsertedDate = DateTime.Now,
+                    Not_InsertedAccId = newUser.Acc_Id,
+                    Not_ModifiedDate = DateTime.Now,
+                    Not_ModifiedAccId = newUser.Acc_Id,
+                };
+                _dbContext.Notifications.Add(notif);
+                await _dbContext.SaveChangesAsync();
+
+                return "Ok";
             }
             catch (Exception ex)
             {
@@ -142,6 +158,19 @@ namespace PRzHealthcareAPI.Services
             }
 
             return listUserDto;
+        }
+        public UserDto GetSelectedUser(int userId)
+        {
+            var user = _dbContext.Accounts.FirstOrDefault(x => x.Acc_Id == userId);
+            if (user == null)
+            {
+                throw new NotFoundException("Użytkownik nie istnieje.");
+            }
+
+            var userDto = _mapper.Map<UserDto>(user);
+
+
+            return userDto;
         }
         public List<UserDto> GetPatientsList()
         {
@@ -225,6 +254,19 @@ namespace PRzHealthcareAPI.Services
                     _dbContext.SaveChanges();
 
                     Tools.SendPasswordReminder(_emailSettings, user, _dbContext.NotificationTypes.FirstOrDefault(x => x.Nty_Name == "Przypomnienie hasła w systemie PRz Healthcare"));
+                    Notification notif = new()
+                    {
+                        Not_EveId = _dbContext.Events.FirstOrDefault().Eve_Id,
+                        Not_NtyId = _dbContext.NotificationTypes.FirstOrDefault(x => x.Nty_Name == "Przypomnienie hasła w systemie PRz Healthcare").Nty_Id,
+                        Not_SendTime = DateTime.Now,
+                        Not_IsActive = true,
+                        Not_InsertedDate = DateTime.Now,
+                        Not_InsertedAccId = user.Acc_Id,
+                        Not_ModifiedDate = DateTime.Now,
+                        Not_ModifiedAccId = user.Acc_Id,
+                    };
+                    _dbContext.Notifications.Add(notif);
+                    _dbContext.SaveChanges();
                 }
                 return "Ok";
             }

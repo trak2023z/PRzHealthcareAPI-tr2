@@ -76,6 +76,11 @@ namespace PRzHealthcareAPI
                  .ForMember(m => m.Eve_InsertedAccId, c => c.MapFrom(s => s.InsertedAccId))
                  .ForMember(m => m.Eve_ModifiedDate, c => c.MapFrom(s => s.ModifiedDate))
                  .ForMember(m => m.Eve_ModifiedAccId, c => c.MapFrom(s => s.ModifiedAccId));
+
+            CreateMap<NotificationType, NotificationTypeDto>()
+                .ForMember(m => m.Id, c => c.MapFrom(s => s.Nty_Id))
+                .ForMember(m => m.Name, c => c.MapFrom(s => s.Nty_Name))
+                .ForMember(m => m.Template, c => c.MapFrom(s => s.Nty_Template));
         }
     }
 }

@@ -1,15 +1,19 @@
-﻿using BoldReports.Writer;
+﻿using BoldReports.Processing.ObjectModels;
+using BoldReports.Writer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using PRzHealthcareAPI.Helpers;
 using PRzHealthcareAPI.Models.DTO;
 using PRzHealthcareAPI.Services;
+using System.IO;
+using System.Net.Mail;
 using static Syncfusion.XlsIO.Parser.Biff_Records.TextWithFormat;
 
 namespace PRzHealthcareAPI.Controllers
 {
     [Route("certificate")]
     [ApiController]
-    //[Authorize]
+    [Authorize]
     public class CertificateController
     {
         private readonly ICertificateService _certificateService;
@@ -22,11 +26,11 @@ namespace PRzHealthcareAPI.Controllers
         }
 
         [HttpPost("covid")]
-        public IActionResult Export() //[FromBody] EventDto? dto
+        public IActionResult ExportToPDF([FromBody] EventDto dto)
         {
-            EventDto dto = new EventDto();
             var score = _certificateService.PrintCOVIDCertificateToPDF(dto);
             return score;
         }
+        
     }
 }

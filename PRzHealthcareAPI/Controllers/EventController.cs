@@ -27,6 +27,12 @@ namespace PRzHealthcareAPI.Controllers
             _eventService.SeedDates();
             return Ok();
         }
+        [HttpGet]
+        public ActionResult GetSelectedEvent([FromQuery] int eventId)
+        {
+            var selectedEvent = _eventService.GetSelectedEvent(eventId);
+            return Ok(selectedEvent);
+        }
 
         [HttpGet("getavailabledates")]
         public ActionResult GetAvailableDates([FromQuery] string selectedDate, [FromQuery] string selectedDoctorId)
@@ -39,6 +45,12 @@ namespace PRzHealthcareAPI.Controllers
         public ActionResult GetUserEvents([FromQuery] int accountId)
         {
             var availableEvents = _eventService.GetUserEvents(accountId);
+            return Ok(availableEvents);
+        }
+        [HttpGet("getbusyevents")]
+        public ActionResult GetBusyEvents([FromQuery] int accountId)
+        {
+            var availableEvents = _eventService.GetBusyEvents(accountId);
             return Ok(availableEvents);
         }
 
