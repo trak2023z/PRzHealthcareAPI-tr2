@@ -5,6 +5,12 @@ namespace PRzHealthcareAPI.Helpers
 {
     public class CryptoEngine
     {
+        /// <summary>
+        /// Szyfrowanie ciagu znaków
+        /// </summary>
+        /// <param name="input">Ciąg wejściowy</param>
+        /// <param name="key">Sól</param>
+        /// <returns></returns>
         public static string Encrypt(string input, string key)
         {
             byte[] inputArray = UTF8Encoding.UTF8.GetBytes(input);
@@ -17,6 +23,13 @@ namespace PRzHealthcareAPI.Helpers
             tripleDES.Clear();
             return Convert.ToBase64String(resultArray, 0, resultArray.Length);
         }
+
+        /// <summary>
+        /// Deszyfrowanie ciagu znaków
+        /// </summary>
+        /// <param name="input">Ciąg wejściowy</param>
+        /// <param name="key">Sól</param>
+        /// <returns></returns>
         public static string Decrypt(string input, string key)
         {
             byte[] inputArray = Convert.FromBase64String(input);

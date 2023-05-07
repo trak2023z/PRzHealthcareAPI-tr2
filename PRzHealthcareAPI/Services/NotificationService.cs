@@ -22,6 +22,10 @@ namespace PRzHealthcareAPI.Services
             _mapper = mapper;
         }
 
+        /// <summary>
+        /// Pobranie typów notyfikacji
+        /// </summary>
+        /// <returns>Lista typów notyfikacji</returns>
         public List<NotificationTypeDto> GetAllTypes()
         {
             var list = _dbContext.NotificationTypes.ToList();
@@ -40,6 +44,11 @@ namespace PRzHealthcareAPI.Services
             return listNotificationTypeDto;
         }
 
+        /// <summary>
+        /// Edycja wybranego typu notyfikacji
+        /// </summary>
+        /// <param name="dto">Obiekt typu notyfikacji</param>
+        /// <param name="accountId">Id zalogowanego użytkownika</param>
         public void EditNotificationType(NotificationTypeDto dto, int accountId)
         {
             var notificationType = _dbContext.NotificationTypes.FirstOrDefault(x => x.Nty_Id == dto.Id);

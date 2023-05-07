@@ -19,15 +19,18 @@ namespace PRzHealthcareAPI.Services
             _httpClient = httpClient;
         }
 
+        /// <summary>
+        /// Walidacja Captchy
+        /// </summary>
+        /// <param name="captchaResponse">Klucz witryny</param>
+        /// <returns>Wynik walidacji captcha</returns>
+        /// <exception cref="BadRequestException">Błąd podczas wysyłania żądania</exception>
         public async Task<string> ValidateCaptcha(CaptchaResponseDto captchaResponse)
         {
             try
             {
-                // 1. Extract the CAPTCHA response from the request parameters.
-
-                // 2. Send a request to the CAPTCHA validation service to verify the response.
                 var validationEndpoint = "https://www.google.com/recaptcha/api/siteverify";
-                var secret = "6LfJZt8lAAAAAJBdjkP_SsJE169C6ct0S-nR0Gp8";
+                var secret = "6LftZ-wlAAAAAA6DnXWdjk8LbaLb5wGqCUrIRgII";
                 var requestBody = new FormUrlEncodedContent(new[]
                 {
             new KeyValuePair<string, string>("secret", secret),
@@ -35,7 +38,6 @@ namespace PRzHealthcareAPI.Services
         });
                 var response = await _httpClient.PostAsync(validationEndpoint, requestBody);
 
-                // 3. Depending on the validation result, return a response to the client indicating whether the CAPTCHA was validated successfully or not.
                 var responseContent = await response.Content.ReadAsStringAsync();
                 var validationResponse = Newtonsoft.Json.JsonConvert.DeserializeObject<CaptchaValidationResponse>(responseContent);
                 if (validationResponse.Success)

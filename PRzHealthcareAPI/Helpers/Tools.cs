@@ -11,7 +11,15 @@ namespace PRzHealthcareAPI.Helpers
         private static string _host = "smtp.office365.com";
         private static int _port = 587;
         private static int _timeout = 10000;
-        private static string _starterLink = $@"http://localhost:3000";
+        private static string _starterLink = $@"https://przhealthcare-app.azurewebsites.net";
+
+        /// <summary>
+        /// Wysłanie powiadomienia o rejestracji użytkownika
+        /// </summary>
+        /// <param name="emailSettings">Obiekt konfiguracji skrzynki pocztowej</param>
+        /// <param name="user">Obiekt użytkownika docelowego</param>
+        /// <param name="notification">Obiekt notyfikacji</param>
+        /// <returns>Poprawność wykonania funkcji</returns>
         public static bool SendRegistrationMail(EmailSettings emailSettings, Account user, NotificationType notification)
         {
             try
@@ -45,6 +53,14 @@ namespace PRzHealthcareAPI.Helpers
                 return false;
             }
         }
+
+        /// <summary>
+        /// Wysłanie powiadomienia o przypomnieniu hasła użytkownika
+        /// </summary>
+        /// <param name="emailSettings">Obiekt konfiguracji skrzynki pocztowej</param>
+        /// <param name="user">Obiekt użytkownika docelowego</param>
+        /// <param name="notification">Obiekt notyfikacji</param>
+        /// <returns>Poprawność wykonania funkcji</returns>
         public static bool SendPasswordReminder(EmailSettings emailSettings, Account user, NotificationType notification)
         {
             try
@@ -78,6 +94,15 @@ namespace PRzHealthcareAPI.Helpers
                 return false;
             }
         }
+
+        /// <summary>
+        /// Wysłanie powiadomienia o potwierdzeniu wizyty użytkownika
+        /// </summary>
+        /// <param name="emailSettings">Obiekt konfiguracji skrzynki pocztowej</param>
+        /// <param name="user">Obiekt użytkownika docelowego</param>
+        /// <param name="newEvent">Obiekt terminu wizyty</param>
+        /// <param name="notification">Obiekt notyfikacji</param>
+        /// <returns>Poprawność wykonania funkcji</returns>
         public static bool SendVisitConfirmation(EmailSettings emailSettings, Account user, Event newEvent, NotificationType notification)
         {
             try
@@ -111,6 +136,15 @@ namespace PRzHealthcareAPI.Helpers
                 return false;
             }
         }
+
+        /// <summary>
+        /// Wysłanie powiadomienia o anulowaniu wizyty użytkownika
+        /// </summary>
+        /// <param name="emailSettings">Obiekt konfiguracji skrzynki pocztowej</param>
+        /// <param name="user">Obiekt użytkownika docelowego</param>
+        /// <param name="cancelledEvent">Obiekt anulowanego terminu wizyty</param>
+        /// <param name="notification">Obiekt notyfikacji</param>
+        /// <returns>Poprawność wykonania funkcji</returns>
         public static bool SendVisitCancellation(EmailSettings emailSettings, Account user, Event cancelledEvent, NotificationType notification)
         {
             try
@@ -144,6 +178,15 @@ namespace PRzHealthcareAPI.Helpers
                 return false;
             }
         }
+
+        /// <summary>
+        /// Wysłanie powiadomienia o zakończeniu wizyty użytkownika wraz z zaświadczeniem COVID
+        /// </summary>
+        /// <param name="emailSettings">Obiekt konfiguracji skrzynki pocztowej</param>
+        /// <param name="user">Obiekt użytkownika docelowego</param>
+        /// <param name="finishedEvent">Obiekt zakończonego terminu wizyty</param>
+        /// <param name="notification">Obiekt notyfikacji</param>
+        /// <returns>Poprawność wykonania funkcji</returns>
         public static bool SendVisitCertificate(EmailSettings emailSettings, Account user, Event finishedEvent, NotificationType notification, MemoryStream attachmentFile)
         {
             try
@@ -167,7 +210,6 @@ namespace PRzHealthcareAPI.Helpers
                 objeto_mail.Body = notification.Nty_Template
                     .Replace("@@NAZWA", $@"{user.Acc_Firstname} {user.Acc_Lastname}");
 
-                //Attachment attachment = new Attachment(attachmentFile, $@"{user.Acc_Firstname}{user.Acc_Lastname}{finishedEvent.Eve_ModifiedDate.ToShortDateString().Replace(".","_")}.pdf");
                 Attachment attachment = new Attachment(Path.Combine(Path.GetTempPath(), $@"certificate{finishedEvent.Eve_Id}.pdf"));
                 objeto_mail.Attachments.Add(attachment);
 
@@ -180,6 +222,12 @@ namespace PRzHealthcareAPI.Helpers
                 return false;
             }
         }
+
+        /// <summary>
+        /// Generowanie ciągu znaków
+        /// </summary>
+        /// <param name="bytes">Ilość bajtów do wygenerowania tekstu</param>
+        /// <returns></returns>
         public static string CreateRandomToken(int bytes)
         {
             return Convert.ToHexString(RandomNumberGenerator.GetBytes(bytes));

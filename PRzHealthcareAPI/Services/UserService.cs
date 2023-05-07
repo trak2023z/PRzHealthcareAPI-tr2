@@ -46,6 +46,11 @@ namespace PRzHealthcareAPI.Services
             this._mapper = mapper;
         }
 
+        /// <summary>
+        /// Rejestracja użytkownika w systemie
+        /// </summary>
+        /// <param name="dto">Obiekt użytkownika</param>
+        /// <returns>Poprawność wykonania funkcji</returns>
         public async Task<string> Register(RegisterUserDto dto)
         {
             var loginExists = _dbContext.Accounts.Any(x => x.Acc_Login == dto.Login || x.Acc_Email == dto.Email || x.Acc_Pesel == dto.Pesel);
@@ -91,6 +96,11 @@ namespace PRzHealthcareAPI.Services
             }
         }
 
+        /// <summary>
+        /// Logowanie użytkownika - generowanie tokenu
+        /// </summary>
+        /// <param name="dto">Obiekt użytkownika</param>
+        /// <returns>Obiekt użytkownika z tokenem</returns>
         public LoginUserDto? GenerateToken(LoginUserDto dto)
         {
             var user = _dbContext.Accounts
@@ -108,7 +118,7 @@ namespace PRzHealthcareAPI.Services
             }
 
             /*  Niezarejestrowany   */
-            if (user.AccountType.Aty_Name == "Niezarejestrowany")
+            if (user.AccountType.Aty_Name == "Niepotwierdzony")
             {
                 throw new BadRequestException("Twoje konto nie zostało wciąż potwierdzone.");
             }
@@ -141,6 +151,10 @@ namespace PRzHealthcareAPI.Services
             return loginUser;
         }
 
+        /// <summary>
+        /// Pobranie listy doktorów
+        /// </summary>
+        /// <returns>Lista doktorów</returns>
         public List<UserDto> GetDoctorsList()
         {
             var doctorAccountTypeId = _dbContext.AccountTypes.FirstOrDefault(x => x.Aty_Name == "Doktor").Aty_Id;
@@ -159,6 +173,13 @@ namespace PRzHealthcareAPI.Services
 
             return listUserDto;
         }
+
+        /// <summary>
+        /// Pobranie szczegółów wybranego użytkownika
+        /// </summary>
+        /// <param name="userId">Id wybranego użytkownika</param>
+        /// <returns>Szczegóły użytkownika</returns>
+        /// <exception cref="NotFoundException"></exception>
         public UserDto GetSelectedUser(int userId)
         {
             var user = _dbContext.Accounts.FirstOrDefault(x => x.Acc_Id == userId);
@@ -172,6 +193,11 @@ namespace PRzHealthcareAPI.Services
 
             return userDto;
         }
+
+        /// <summary>
+        /// Pobranie listy pacjentów
+        /// </summary>
+        /// <returns>Lista obiektów pacjentów</returns>
         public List<UserDto> GetPatientsList()
         {
             var patientAccountTypeId = _dbContext.AccountTypes.FirstOrDefault(x => x.Aty_Name == "Pacjent").Aty_Id;
@@ -190,6 +216,12 @@ namespace PRzHealthcareAPI.Services
 
             return listUserDto;
         }
+
+        /// <summary>
+        /// Potwierdzenie konta poprzez e-mail
+        /// </summary>
+        /// <param name="hashcode">Kod otrzymany w wiadomości email</param>
+        /// <returns>Poprawność wykonania funkcji</returns>
         public async Task<string> ConfirmMail(string hashcode)
         {
             try
@@ -216,6 +248,11 @@ namespace PRzHealthcareAPI.Services
                 throw new BadRequestException("Wystąpił błąd podczas próby potwierdzenia użytkownika.");
             }
         }
+
+        /// <summary>
+        /// Zmiana hasła użytkownika
+        /// </summary>
+        /// <param name="dto">Obiekt zmiany hasła użytkownika</param>
         public void ChangePassword(ChangeUserPasswordDto dto)
         {
             var user = _dbContext.Accounts.FirstOrDefault(x => x.Acc_Login == dto.Login);
@@ -241,6 +278,11 @@ namespace PRzHealthcareAPI.Services
             _dbContext.SaveChanges();
         }
 
+        /// <summary>
+        /// Wysłanie powiadomienia o próbie zmiany hasła
+        /// </summary>
+        /// <param name="email">Adres e-mail użytkownika</param>
+        /// <returns>Poprawność wykonania funkcji</returns>
         public async Task<string> ResetPasswordRequest(string email)
         {
             try
@@ -276,6 +318,12 @@ namespace PRzHealthcareAPI.Services
             }
             
         }
+
+        /// <summary>
+        /// Zmiana hasła użytkownika
+        /// </summary>
+        /// <param name="dto">Obiekt zmiany hasła użytkownika</param>
+        /// <returns>Poprawność wykonania funkcji</returns>
         public async Task<string> ResetPassword(ResetUserPasswordDto dto)
         {
             try
@@ -302,6 +350,12 @@ namespace PRzHealthcareAPI.Services
             }
 
         }
+
+        /// <summary>
+        /// Weryfikacja kodu Hash użytkownika przez zmianą hasła
+        /// </summary>
+        /// <param name="hashcode">Kod zmiany hasła użytkownika</param>
+        /// <returns>Poprawność wykonania funkcji</returns>
         public async Task<string> ResetPasswordCheckHashCode(string hashcode)
         {
             try

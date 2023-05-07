@@ -45,7 +45,13 @@ namespace PRzHealthcareAPI.Services
         }
 
 
-
+        /// <summary>
+        /// Pobranie wolnych terminów
+        /// </summary>
+        /// <param name="selectedDate">Wybrana data</param>
+        /// <param name="selectedDoctorId">Wybrany doktor</param>
+        /// <returns>Lista wolnych terminów</returns>
+        /// <exception cref="NotFoundException">Brak wolnych terminów</exception>
         public List<EventDto> GetAvailableDates(string selectedDate, string selectedDoctorId)
         {
 
@@ -71,8 +77,11 @@ namespace PRzHealthcareAPI.Services
 
         }
 
-
-
+        /// <summary>
+        /// Pobranie terminów zajętych przez użytkownika
+        /// </summary>
+        /// <param name="accountId">Id zalogowanego użytkownika</param>
+        /// <returns>Lista zajętych terminów</returns>
         public List<EventDto> GetUserEvents(int accountId)
         {
             var busyEventTypeId = _dbContext.EventTypes.FirstOrDefault(x => x.Ety_Name == "Zajęty").Ety_Id;
@@ -88,6 +97,12 @@ namespace PRzHealthcareAPI.Services
             return eventDtos;
 
         }
+
+        /// <summary>
+        /// Pobranie wszystkich terminów użytkownika, które nie są wolne
+        /// </summary>
+        /// <param name="accountId">Id zalogowanego użytkownika</param>
+        /// <returns>Lista niewolnych terminów</returns>
         public List<EventDto> GetBusyEvents(int accountId)
         {
             var freeEventTypeId = _dbContext.EventTypes.FirstOrDefault(x => x.Ety_Name == "Wolny").Ety_Id;
@@ -118,6 +133,13 @@ namespace PRzHealthcareAPI.Services
             return eventDtos;
 
         }
+
+        /// <summary>
+        /// Pobranie szczegółów wybranego terminu
+        /// </summary>
+        /// <param name="eventId">Id terminu</param>
+        /// <returns>Szczegóły terminu</returns>
+        /// <exception cref="NotFoundException">Brak wydarzenia</exception>
         public EventDto GetSelectedEvent(int eventId)
         {
             var selectedEvent = _dbContext.Events.FirstOrDefault(x => x.Eve_Id == eventId);
@@ -134,6 +156,12 @@ namespace PRzHealthcareAPI.Services
             return eventDto;
 
         }
+
+        /// <summary>
+        /// Pobranie listy terminów wybranego doktora
+        /// </summary>
+        /// <param name="accountId">Id doktora</param>
+        /// <returns>Lista terminów wybranego doktora</returns>
         public List<EventDto> GetDoctorEvents(int accountId)
         {
             var busyEventTypeId = _dbContext.EventTypes.FirstOrDefault(x => x.Ety_Name == "Zajęty").Ety_Id;
@@ -149,6 +177,11 @@ namespace PRzHealthcareAPI.Services
             return eventDtos;
 
         }
+
+        /// <summary>
+        /// Pobranie listy terminów dla pielęgniarki
+        /// </summary>
+        /// <returns>Lista terminów dla pielęgniarki</returns>
         public List<EventDto> GetNurseEvents()
         {
             var busyEventTypeId = _dbContext.EventTypes.FirstOrDefault(x => x.Ety_Name == "Zajęty").Ety_Id;
@@ -172,6 +205,11 @@ namespace PRzHealthcareAPI.Services
 
         }
 
+        /// <summary>
+        /// Zajęcie terminu
+        /// </summary>
+        /// <param name="dto">Obiekt danego terminu</param>
+        /// <param name="accountId">Id zalogowanego użytkownika</param>
         public void TakeTerm(EventDto dto, string accountId)
         {
             var busyEventTypeId = _dbContext.EventTypes.FirstOrDefault(x => x.Ety_Name == "Zajęty").Ety_Id;
@@ -206,17 +244,16 @@ namespace PRzHealthcareAPI.Services
             var finishEventTypeId = _dbContext.EventTypes.FirstOrDefault(x => x.Ety_Name == "Zakończony").Ety_Id;
             var lastUserVaccination = _dbContext.Events.Where(x => x.Eve_AccId == user.Acc_Id && x.Eve_Type == finishEventTypeId).ToList();
 
-            //todo: odkomentuj na koniec
-            //if (lastUserVaccination.Any(x => x.Eve_TimeFrom.AddDays(selectedVaccination.Vac_DaysBetweenVacs) > dto.TimeFrom))
-            //{
-            //    throw new BadRequestException("Prosimy odczekać odstęp czasu opisany w zaświadczeniu. W razie problemów prosimy o kontakt telefoniczny.");
-            //}
+            if (lastUserVaccination.Any(x => x.Eve_TimeFrom.AddDays(selectedVaccination.Vac_DaysBetweenVacs) > Convert.ToDateTime(dto.TimeFrom)))
+            {
+                throw new BadRequestException("Prosimy odczekać odstęp czasu opisany w zaświadczeniu. W razie problemów prosimy o kontakt telefoniczny.");
+            }
 
-            //var lastUserVaccinationRequest = _dbContext.Events.Where(x => x.Eve_AccId == user.Acc_Id && x.Eve_Type == busyEventTypeId).ToList();
-            //if (lastUserVaccinationRequest.Any())
-            //{
-            //    throw new BadRequestException("Nie ma możliwości rejestracji na dwie oddzielne wizyty.");
-            //}
+            var lastUserVaccinationRequest = _dbContext.Events.Where(x => x.Eve_AccId == user.Acc_Id && x.Eve_Type == busyEventTypeId).ToList();
+            if (lastUserVaccinationRequest.Any())
+            {
+                throw new BadRequestException("Nie ma możliwości rejestracji na dwie oddzielne wizyty.");
+            }
 
             changedEvent.Eve_AccId = user.Acc_Id;
             changedEvent.Eve_Type = busyEventTypeId;
@@ -246,6 +283,12 @@ namespace PRzHealthcareAPI.Services
             _dbContext.Notifications.Add(notif);
             _dbContext.SaveChangesAsync();
         }
+
+        /// <summary>
+        /// Zakończenie terminu
+        /// </summary>
+        /// <param name="dto">Obiekt terminu</param>
+        /// <param name="accountId">Id zalogowanego użytkownika</param>
         public void FinishTerm(EventDto dto, string accountId)
         {
             var finishEventTypeId = _dbContext.EventTypes.FirstOrDefault(x => x.Ety_Name == "Zakończony").Ety_Id;
@@ -290,6 +333,11 @@ namespace PRzHealthcareAPI.Services
             _dbContext.SaveChangesAsync();
         }
 
+        /// <summary>
+        /// Anulowanie terminu
+        /// </summary>
+        /// <param name="dto">Obiekt terminu</param>
+        /// <param name="accountId">Id zalogowanego użytkownika</param>
         public void CancelTerm(EventDto dto, string accountId)
         {
             var freeEventTypeId = _dbContext.EventTypes.FirstOrDefault(x => x.Ety_Name == "Wolny").Ety_Id;
@@ -331,6 +379,12 @@ namespace PRzHealthcareAPI.Services
             _dbContext.Notifications.Add(notif);
             _dbContext.SaveChangesAsync();
         }
+
+        /// <summary>
+        /// Edycja wybranego terminu - zmiana szczepionki
+        /// </summary>
+        /// <param name="dto">Obiekt terminu</param>
+        /// <param name="accountId">Id zalogowanego użytkownika</param>
         public void EditTerm(EventDto dto, string accountId)
         {
             var freeEventTypeId = _dbContext.EventTypes.FirstOrDefault(x => x.Ety_Name == "Wolny").Ety_Id;
@@ -348,6 +402,10 @@ namespace PRzHealthcareAPI.Services
             _dbContext.SaveChangesAsync();
         }
 
+        /// <summary>
+        /// Zapełnienie wolnych terminów
+        /// </summary>
+        /// <returns>Poprawność wykonania funkcji</returns>
         public bool SeedDates()
         {
             var calendar = new PolandPublicHoliday();
@@ -366,7 +424,7 @@ namespace PRzHealthcareAPI.Services
 
             foreach (var doctor in doctorsList)
             {
-                //if(doctor.Acc_Id == 16)
+                //if (doctor.Acc_Id == 16)
                 //{
                 //    continue;
                 //}

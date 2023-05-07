@@ -117,12 +117,5 @@ namespace PRzHealthcareAPI.Controllers
             return Ok();
         }
 
-        [HttpPatch("printcertificate")]
-        public ActionResult PrintCertificate()
-        {
-            BoldReportsApi.PrintPDF();
-
-            return Ok();
-        }
     }
 }

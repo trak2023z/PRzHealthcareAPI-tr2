@@ -12,7 +12,7 @@ using System.Web.Services.Description;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.WebHost.UseUrls("http://192.168.56.1:5000");
+//builder.WebHost.UseUrls("http://192.168.56.1:5000");
 
 
 var envName = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");

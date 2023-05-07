@@ -31,6 +31,10 @@ namespace PRzHealthcareAPI.Services
             _mapper = mapper;
         }
 
+        /// <summary>
+        /// Pobranie listy szczepionek
+        /// </summary>
+        /// <returns>Lista obiektów szczepionek</returns>
         public List<VaccinationDto> GetAll()
         {
             var vaccinationList = _dbContext.Vaccinations.ToList();
@@ -48,6 +52,12 @@ namespace PRzHealthcareAPI.Services
 
             return vaccinationListDto;
         }
+
+        /// <summary>
+        /// Dodanie nowej szczepionki
+        /// </summary>
+        /// <param name="dto">Obiekt nowej szczepionki</param>
+        /// <param name="accountId">Id zalogowanego użytkownika</param>
         public void AddVaccination(VaccinationDto dto, int accountId)
         {
             var vaccinationExists = _dbContext.Vaccinations.FirstOrDefault(x => x.Vac_Name == dto.Name);
@@ -72,6 +82,11 @@ namespace PRzHealthcareAPI.Services
             _dbContext.SaveChanges();
         }
 
+        /// <summary>
+        /// Edycja wybranej szczepionki
+        /// </summary>
+        /// <param name="dto">Obiekt edytowanej szczepionki</param>
+        /// <param name="accountId">Id zalogowanego użytkownika</param>
         public void EditVaccination(VaccinationDto dto, int accountId)
         {
             var editedVaccination = _dbContext.Vaccinations.FirstOrDefault(x => x.Vac_Id == dto.Id);
@@ -89,6 +104,12 @@ namespace PRzHealthcareAPI.Services
             _dbContext.Vaccinations.Update(editedVaccination);
             _dbContext.SaveChanges();
         }
+
+        /// <summary>
+        /// Archiwizacja szczepionki
+        /// </summary>
+        /// <param name="dto">Obiekt archiwizowanej szczepionki</param>
+        /// <param name="accountId">Id zalogowanego użytkownika</param>
         public void ArchiveVaccination(VaccinationDto dto, int accountId)
         {
             var editedVaccination = _dbContext.Vaccinations.FirstOrDefault(x => x.Vac_Id == dto.Id);
@@ -110,6 +131,12 @@ namespace PRzHealthcareAPI.Services
             _dbContext.Vaccinations.Update(editedVaccination);
             _dbContext.SaveChanges();
         }
+
+        /// <summary>
+        /// Włączenie dostępności szczepionki
+        /// </summary>
+        /// <param name="dto">Obiekt edytowanej szczepionki</param>
+        /// <param name="accountId">Id zalogowanego użytkownika</param>
         public void UnarchiveVaccination(VaccinationDto dto, int accountId)
         {
             var editedVaccination = _dbContext.Vaccinations.FirstOrDefault(x => x.Vac_Id == dto.Id);

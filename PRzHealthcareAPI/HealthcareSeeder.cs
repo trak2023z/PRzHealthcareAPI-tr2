@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using PRzHealthcareAPI.Models;
 using PRzHealthcareAPI.Services;
 
@@ -21,6 +22,12 @@ namespace PRzHealthcareAPI
         {
             if (_dbContext.Database.CanConnect())
             {
+                var pendingMigration = _dbContext.Database.GetPendingMigrations();
+                if(pendingMigration != null && pendingMigration.Any())
+                {
+                    _dbContext.Database.Migrate();
+                }
+
                 if (!_dbContext.AccountTypes.Any())
                 {
                     var accountTypes = GetAccountTypes();
@@ -95,7 +102,7 @@ namespace PRzHealthcareAPI
             {
                 Acc_AtyId = adminAccountTypeId,
                 Acc_ContactNumber = "123-456-789",
-                Acc_DateOfBirth = Convert.ToDateTime("14.06.1998"),
+                Acc_DateOfBirth = Convert.ToDateTime("06.14.1998"),
                 Acc_Email = @"165083@stud.prz.edu.pl",
                 Acc_Firstname = "Mateusz",
                 Acc_Lastname = "Kubis",
@@ -137,7 +144,7 @@ namespace PRzHealthcareAPI
             {
                 Acc_AtyId = doctorAccountTypeId,
                 Acc_ContactNumber = "966-455-123",
-                Acc_DateOfBirth = Convert.ToDateTime("23.05.1968"),
+                Acc_DateOfBirth = Convert.ToDateTime("05.23.1968"),
                 Acc_Email = @"mri78421@zslsz.com",
                 Acc_Firstname = "Andrzej",
                 Acc_Lastname = "Rodzinny",
@@ -179,7 +186,7 @@ namespace PRzHealthcareAPI
             {
                 Acc_AtyId = patientAccountTypeId,
                 Acc_ContactNumber = "987-456-132",
-                Acc_DateOfBirth = Convert.ToDateTime("01.06.1996"),
+                Acc_DateOfBirth = Convert.ToDateTime("06.01.1996"),
                 Acc_Email = @"zmn98802@nezid.com",
                 Acc_Firstname = "Mariola",
                 Acc_Lastname = "Łoskot",
