@@ -1,5 +1,6 @@
 ﻿using PRzHealthcareAPI.Models;
 using System.Net.Mail;
+using System.Security.Cryptography;
 
 namespace PRzHealthcareAPI.Helpers
 {
@@ -178,6 +179,10 @@ namespace PRzHealthcareAPI.Helpers
             {
                 return false;
             }
+        }
+        public static string CreateRandomToken(int bytes)
+        {
+            return Convert.ToHexString(RandomNumberGenerator.GetBytes(bytes));
         }
     }
 }

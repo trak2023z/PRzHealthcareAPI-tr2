@@ -25,6 +25,7 @@ namespace PRzHealthcareAPI.Services
         void TakeTerm(EventDto dto, string accountId);
         void CancelTerm(EventDto dto, string accountId);
         void FinishTerm(EventDto dto, string accountId);
+        void EditTerm(EventDto dto, string accountId);
     }
     public class EventService : IEventService
     {
@@ -96,6 +97,7 @@ namespace PRzHealthcareAPI.Services
 
             foreach (var ev in events)
             {
+                
                 var eventDto = _mapper.Map<EventDto>(ev);
                 if (eventDto.AccId == accountId)
                 {
@@ -106,7 +108,11 @@ namespace PRzHealthcareAPI.Services
                     eventDto.AccId = 0;
                     eventDto.Description = "Zajęty";
                 }
-
+                eventDto.DateFrom = Convert.ToDateTime(eventDto.TimeFrom);
+                eventDto.DateTo = Convert.ToDateTime(eventDto.TimeTo);
+                eventDto.TimeFrom = Convert.ToDateTime(eventDto.TimeFrom).ToString("MM.dd.yyyy HH:mm");
+                eventDto.TimeTo = Convert.ToDateTime(eventDto.TimeTo).ToString("MM.dd.yyyy HH:mm");
+                
                 eventDtos.Add(eventDto);
             }
             return eventDtos;
@@ -155,6 +161,11 @@ namespace PRzHealthcareAPI.Services
             foreach (var ev in events)
             {
                 var eventDto = _mapper.Map<EventDto>(ev);
+
+                eventDto.DateFrom = Convert.ToDateTime(eventDto.TimeFrom);
+                eventDto.DateTo = Convert.ToDateTime(eventDto.TimeTo);
+                eventDto.TimeFrom = Convert.ToDateTime(eventDto.TimeFrom).ToString("MM.dd.yyyy HH:mm");
+                eventDto.TimeTo = Convert.ToDateTime(eventDto.TimeTo).ToString("MM.dd.yyyy HH:mm");
                 eventDtos.Add(eventDto);
             }
             return eventDtos;
@@ -201,11 +212,11 @@ namespace PRzHealthcareAPI.Services
             //    throw new BadRequestException("Prosimy odczekać odstęp czasu opisany w zaświadczeniu. W razie problemów prosimy o kontakt telefoniczny.");
             //}
 
-            var lastUserVaccinationRequest = _dbContext.Events.Where(x => x.Eve_AccId == user.Acc_Id && x.Eve_Type == busyEventTypeId).ToList();
-            if (lastUserVaccinationRequest.Any())
-            {
-                throw new BadRequestException("Nie ma możliwości rejestracji na dwie oddzielne wizyty.");
-            }
+            //var lastUserVaccinationRequest = _dbContext.Events.Where(x => x.Eve_AccId == user.Acc_Id && x.Eve_Type == busyEventTypeId).ToList();
+            //if (lastUserVaccinationRequest.Any())
+            //{
+            //    throw new BadRequestException("Nie ma możliwości rejestracji na dwie oddzielne wizyty.");
+            //}
 
             changedEvent.Eve_AccId = user.Acc_Id;
             changedEvent.Eve_Type = busyEventTypeId;
@@ -233,7 +244,7 @@ namespace PRzHealthcareAPI.Services
                 Not_ModifiedAccId = user.Acc_Id,
             };
             _dbContext.Notifications.Add(notif);
-            _dbContext.SaveChanges();
+            _dbContext.SaveChangesAsync();
         }
         public void FinishTerm(EventDto dto, string accountId)
         {
@@ -254,9 +265,11 @@ namespace PRzHealthcareAPI.Services
             finishedEvent.Eve_ModifiedDate = DateTime.Now;
             finishedEvent.Eve_InsertedDate = DateTime.Now;
             finishedEvent.Eve_InsertedAccId = Convert.ToInt32(accountId);
+            finishedEvent.Eve_SerialNumber = Tools.CreateRandomToken(5);
+
 
             _dbContext.Update(finishedEvent);
-            _dbContext.SaveChangesAsync();
+            _dbContext.SaveChanges();
 
 
             MemoryStream mailAttachment = _certificateService.PrintCOVIDCertificateToMemoryStream(dto);
@@ -274,7 +287,7 @@ namespace PRzHealthcareAPI.Services
                 Not_ModifiedAccId = Convert.ToInt32(accountId),
             };
             _dbContext.Notifications.Add(notif);
-            _dbContext.SaveChanges();
+            _dbContext.SaveChangesAsync();
         }
 
         public void CancelTerm(EventDto dto, string accountId)
@@ -301,7 +314,7 @@ namespace PRzHealthcareAPI.Services
             canceledEvent.Eve_VacId = null;
 
             _dbContext.Update(canceledEvent);
-            _dbContext.SaveChangesAsync();
+            _dbContext.SaveChanges();
 
             Tools.SendVisitCancellation(_emailSettings, user, canceledEvent, _dbContext.NotificationTypes.FirstOrDefault(x => x.Nty_Name == "Anulowanie wizyty w klinice PRz Healthcare"));
             Notification notif = new()
@@ -316,7 +329,23 @@ namespace PRzHealthcareAPI.Services
                 Not_ModifiedAccId = Convert.ToInt32(accountId),
             };
             _dbContext.Notifications.Add(notif);
-            _dbContext.SaveChanges();
+            _dbContext.SaveChangesAsync();
+        }
+        public void EditTerm(EventDto dto, string accountId)
+        {
+            var freeEventTypeId = _dbContext.EventTypes.FirstOrDefault(x => x.Ety_Name == "Wolny").Ety_Id;
+            var editedEvent = _dbContext.Events.FirstOrDefault(x => x.Eve_Id == dto.Id);
+            if (editedEvent == null)
+            {
+                throw new NotFoundException("Wydarzenie nie istnieje.");
+            }
+
+            editedEvent.Eve_ModifiedAccId = Convert.ToInt32(accountId);
+            editedEvent.Eve_ModifiedDate = DateTime.Now;
+            editedEvent.Eve_VacId = dto.VacId;
+
+            _dbContext.Update(editedEvent);
+            _dbContext.SaveChangesAsync();
         }
 
         public bool SeedDates()

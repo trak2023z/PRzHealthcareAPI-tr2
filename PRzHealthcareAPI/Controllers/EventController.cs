@@ -50,8 +50,8 @@ namespace PRzHealthcareAPI.Controllers
         [HttpGet("getbusyevents")]
         public ActionResult GetBusyEvents([FromQuery] int accountId)
         {
-            var availableEvents = _eventService.GetBusyEvents(accountId);
-            return Ok(availableEvents);
+            var busyEvents = _eventService.GetBusyEvents(accountId);
+            return Ok(busyEvents);
         }
 
         [HttpGet("getdoctorevents")]
@@ -102,6 +102,18 @@ namespace PRzHealthcareAPI.Controllers
             }
 
             _eventService.CancelTerm(dto, accountId);
+            return Ok();
+        }
+        [HttpPatch("editterm")]
+        public ActionResult EditTerm([FromBody] EventDto dto)
+        {
+            string accountId = "";
+            if (HttpContext.User.Identity is ClaimsIdentity identity)
+            {
+                accountId = identity.FindFirst(ClaimTypes.SerialNumber).Value;
+            }
+
+            _eventService.EditTerm(dto, accountId);
             return Ok();
         }
 

@@ -45,13 +45,14 @@ namespace PRzHealthcareAPI.Services
                 }
             };
 
-                writer.SetParameters(userParameters);
+
 
                 string fileName = "ZaswiadczenieCOVID.pdf";
                 string type = "pdf";
                 WriterFormat format = WriterFormat.PDF;
 
                 writer.LoadReport(reportStream);
+                writer.SetParameters(userParameters);
                 MemoryStream memoryStream = new MemoryStream();
                 writer.Save(memoryStream, format);
 
@@ -85,11 +86,10 @@ namespace PRzHealthcareAPI.Services
                 }
             };
 
-                writer.SetParameters(userParameters);
-
                 WriterFormat format = WriterFormat.PDF;
 
                 writer.LoadReport(reportStream);
+                writer.SetParameters(userParameters);
                 MemoryStream memoryStream = new MemoryStream();
                 writer.Save(memoryStream, format);
 

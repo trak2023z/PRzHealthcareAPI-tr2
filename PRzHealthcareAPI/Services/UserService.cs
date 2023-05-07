@@ -57,7 +57,7 @@ namespace PRzHealthcareAPI.Services
             try
             {
                 var newUser = _mapper.Map<Account>(dto);
-                newUser.Acc_RegistrationHash = CreateRandomToken();
+                newUser.Acc_RegistrationHash = Tools.CreateRandomToken(64);
                 newUser.Acc_InsertedDate = DateTime.Now;
                 newUser.Acc_ModifiedDate = DateTime.Now;
                 newUser.Acc_IsActive = true;
@@ -249,7 +249,7 @@ namespace PRzHealthcareAPI.Services
 
                 if (user != null)
                 {
-                    user.Acc_ReminderHash = CreateRandomToken();
+                    user.Acc_ReminderHash = Tools.CreateRandomToken(64);
                     user.Acc_ReminderExpire = DateTime.Now.AddDays(1);
                     _dbContext.SaveChanges();
 
@@ -329,10 +329,7 @@ namespace PRzHealthcareAPI.Services
                 throw new BadRequestException("Wystąpił błąd podczas próby potwierdzenia użytkownika na podstawie adres e-mail.");
             }
         }
-        private string CreateRandomToken()
-        {
-            return Convert.ToHexString(RandomNumberGenerator.GetBytes(64));
-        }
+        
         
     }
 }
