@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using PRzHealthcareAPI.Exceptions;
+using PRzHealthcareAPI.Helpers;
 using PRzHealthcareAPI.Models;
 using PRzHealthcareAPI.Models.DTO;
 using System.IO;
@@ -12,6 +13,7 @@ namespace PRzHealthcareAPI.Services
     {
         FileStreamResult PrintCOVIDCertificateToPDF(EventDto dto);
         MemoryStream PrintCOVIDCertificateToMemoryStream(EventDto dto);
+        void AddCertificate(string certificateFilePath, int accountId);
     }
 
     public class CertificateService : ICertificateService
@@ -23,6 +25,53 @@ namespace PRzHealthcareAPI.Services
         {
             _hostingEnvironment = hostingEnvironment;
             _dbContext = dbContext;
+
+        }
+
+        /// <summary>
+        /// Dodanie wydruku certyfikatu do bazy danych
+        /// </summary>
+        /// <param name="certificateFilePath">Ścieżka do certyfikatu</param>
+        /// <param name="accountId">Id zalogowanego użytkownika</param>
+        public void AddCertificate(string certificateFilePath, int accountId)
+        {
+            try
+            {
+                if (!_dbContext.BinData.Any(x => x.Bin_Name == "Certyfikat szczepienia"))
+                {
+                    var certificateContent = Tools.ToBase64Converter(certificateFilePath);
+                    BinData data = new BinData()
+                    {
+                        Bin_Name = "Certyfikat szczepienia",
+                        Bin_Data = certificateContent,
+                        Bin_InsertedDate = DateTime.Now,
+                        Bin_ModifiedDate = DateTime.Now,
+                        Bin_InsertedAccId = accountId,
+                        Bin_ModifiedAccId = accountId,
+                    };
+
+                    _dbContext.BinData.Add(data);
+                    _dbContext.SaveChanges();
+
+                    Certificate certificate = new Certificate()
+                    {
+                        Cer_AccId = accountId,
+                        Cer_BinId = 1,
+                        Cer_IsActive = true,
+                        Cer_InsertedDate = DateTime.Now,
+                        Cer_InsertedAccId = accountId,
+                        Cer_ModifiedAccId = accountId,
+                        Cer_ModifiedDate = DateTime.Now
+                    };
+
+                    _dbContext.Certificates.Add(certificate);
+                    _dbContext.SaveChanges();
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new BadRequestException(ex.Message);
+            }
         }
 
         /// <summary>
@@ -35,17 +84,10 @@ namespace PRzHealthcareAPI.Services
         {
             try
             {
-                if (dto is null)
-                {
-                    dto = new EventDto() { Id = 7195 };
-                }
-                var contentRootPath = Path.Combine(_hostingEnvironment.ContentRootPath, "Resources");
-                DirectoryInfo contentDirectoryInfo = new DirectoryInfo(contentRootPath);
-                var resoruceFilesInfo = contentDirectoryInfo.GetFiles("*.rdl", SearchOption.AllDirectories);
-                var resoruceFileNames = resoruceFilesInfo.Select(info => info.FullName);
-
-
-                FileStream reportStream = new FileStream(resoruceFileNames.FirstOrDefault(), FileMode.Open, FileAccess.Read);
+                var certificate = _dbContext.Certificates.FirstOrDefault(x => x.Cer_Name == "Certyfikat szczepienia COVID");
+                var baseCode = _dbContext.BinData.FirstOrDefault(x => x.Bin_Id == certificate.Cer_BinId).Bin_Data;
+                var filePath = Tools.FromBase64Converter(_hostingEnvironment, baseCode);
+                FileStream reportStream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
                 BoldReports.Writer.ReportWriter writer = new BoldReports.Writer.ReportWriter();
                 writer.ReportProcessingMode = ProcessingMode.Remote;
                 List<BoldReports.Web.ReportParameter> userParameters = new List<BoldReports.Web.ReportParameter>
@@ -71,6 +113,8 @@ namespace PRzHealthcareAPI.Services
                 memoryStream.Position = 0;
                 FileStreamResult fileStreamResult = new FileStreamResult(memoryStream, "application/" + type);
                 fileStreamResult.FileDownloadName = fileName;
+                reportStream.Dispose();
+                File.Delete(filePath);
                 return fileStreamResult;
             }
             catch (Exception ex)
@@ -93,13 +137,10 @@ namespace PRzHealthcareAPI.Services
                 {
                     dto = new EventDto() { Id = 7195 };
                 }
-                var contentRootPath = Path.Combine(_hostingEnvironment.ContentRootPath, "Resources");
-                DirectoryInfo contentDirectoryInfo = new DirectoryInfo(contentRootPath);
-                var resoruceFilesInfo = contentDirectoryInfo.GetFiles("*.rdl", SearchOption.AllDirectories);
-                var resoruceFileNames = resoruceFilesInfo.Select(info => info.FullName);
-
-
-                FileStream reportStream = new FileStream(resoruceFileNames.FirstOrDefault(), FileMode.Open, FileAccess.Read);
+                var certificate = _dbContext.Certificates.FirstOrDefault(x => x.Cer_Name == "Certyfikat szczepienia COVID");
+                var baseCode = _dbContext.BinData.FirstOrDefault(x => x.Bin_Id == certificate.Cer_BinId).Bin_Data;
+                var filePath = Tools.FromBase64Converter(_hostingEnvironment, baseCode);
+                FileStream reportStream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
                 BoldReports.Writer.ReportWriter writer = new BoldReports.Writer.ReportWriter();
                 writer.ReportProcessingMode = ProcessingMode.Remote;
                 List<BoldReports.Web.ReportParameter> userParameters = new List<BoldReports.Web.ReportParameter>

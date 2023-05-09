@@ -7,6 +7,7 @@ namespace PRzHealthcareAPI.Models
         public int Cer_Id { get; set; }
         [ForeignKey("Account")]
         public int Cer_AccId { get; set; }
+        public string? Cer_Name { get; set; }
         [ForeignKey("BinData")]
         public int Cer_BinId { get; set; }
         public bool Cer_IsActive { get; set; }
