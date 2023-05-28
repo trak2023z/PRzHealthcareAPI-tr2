@@ -86,11 +86,13 @@ namespace PRzHealthcareAPI.Services
             {
                 var certificate = _dbContext.Certificates.FirstOrDefault(x => x.Cer_Name == "Certyfikat szczepienia COVID");
                 var baseCode = _dbContext.BinData.FirstOrDefault(x => x.Bin_Id == certificate.Cer_BinId).Bin_Data;
-                var filePath = Tools.FromBase64Converter(_hostingEnvironment, baseCode);
-                FileStream reportStream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
-                BoldReports.Writer.ReportWriter writer = new BoldReports.Writer.ReportWriter();
-                writer.ReportProcessingMode = ProcessingMode.Remote;
-                List<BoldReports.Web.ReportParameter> userParameters = new List<BoldReports.Web.ReportParameter>
+                byte[] fileBytes = Convert.FromBase64String(baseCode);
+
+                using (MemoryStream stream = new MemoryStream(fileBytes))
+                {
+                    BoldReports.Writer.ReportWriter writer = new BoldReports.Writer.ReportWriter();
+                    writer.ReportProcessingMode = ProcessingMode.Remote;
+                    List<BoldReports.Web.ReportParameter> userParameters = new List<BoldReports.Web.ReportParameter>
             {
                 new BoldReports.Web.ReportParameter()
                 {
@@ -101,21 +103,22 @@ namespace PRzHealthcareAPI.Services
 
 
 
-                string fileName = "ZaswiadczenieCOVID.pdf";
-                string type = "pdf";
-                WriterFormat format = WriterFormat.PDF;
+                    string fileName = "ZaswiadczenieCOVID.pdf";
+                    string type = "pdf";
+                    WriterFormat format = WriterFormat.PDF;
 
-                writer.LoadReport(reportStream);
-                writer.SetParameters(userParameters);
-                MemoryStream memoryStream = new MemoryStream();
-                writer.Save(memoryStream, format);
+                    writer.LoadReport(stream);
+                    writer.SetParameters(userParameters);
+                    MemoryStream memoryStream = new MemoryStream();
+                    writer.Save(memoryStream, format);
+                    memoryStream.Position = 0;
+                    FileStreamResult fileStreamResult = new FileStreamResult(memoryStream, "application/" + type);
+                    fileStreamResult.FileDownloadName = fileName;
 
-                memoryStream.Position = 0;
-                FileStreamResult fileStreamResult = new FileStreamResult(memoryStream, "application/" + type);
-                fileStreamResult.FileDownloadName = fileName;
-                reportStream.Dispose();
-                File.Delete(filePath);
-                return fileStreamResult;
+                    //File.Delete(filePath);
+                    return fileStreamResult;
+                }
+
             }
             catch (Exception ex)
             {
@@ -139,11 +142,14 @@ namespace PRzHealthcareAPI.Services
                 }
                 var certificate = _dbContext.Certificates.FirstOrDefault(x => x.Cer_Name == "Certyfikat szczepienia COVID");
                 var baseCode = _dbContext.BinData.FirstOrDefault(x => x.Bin_Id == certificate.Cer_BinId).Bin_Data;
-                var filePath = Tools.FromBase64Converter(_hostingEnvironment, baseCode);
-                FileStream reportStream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
-                BoldReports.Writer.ReportWriter writer = new BoldReports.Writer.ReportWriter();
-                writer.ReportProcessingMode = ProcessingMode.Remote;
-                List<BoldReports.Web.ReportParameter> userParameters = new List<BoldReports.Web.ReportParameter>
+                byte[] fileBytes = Convert.FromBase64String(baseCode);
+
+                using (MemoryStream stream = new MemoryStream(fileBytes))
+                {
+
+                    BoldReports.Writer.ReportWriter writer = new BoldReports.Writer.ReportWriter();
+                    writer.ReportProcessingMode = ProcessingMode.Remote;
+                    List<BoldReports.Web.ReportParameter> userParameters = new List<BoldReports.Web.ReportParameter>
             {
                 new BoldReports.Web.ReportParameter()
                 {
@@ -152,21 +158,22 @@ namespace PRzHealthcareAPI.Services
                 }
             };
 
-                WriterFormat format = WriterFormat.PDF;
+                    WriterFormat format = WriterFormat.PDF;
 
-                writer.LoadReport(reportStream);
-                writer.SetParameters(userParameters);
-                MemoryStream memoryStream = new MemoryStream();
-                writer.Save(memoryStream, format);
+                    writer.LoadReport(stream);
+                    writer.SetParameters(userParameters);
+                    MemoryStream memoryStream = new MemoryStream();
+                    writer.Save(memoryStream, format);
 
-                string fileName = Path.Combine(Path.GetTempPath(), $@"certificate{dto.Id}.pdf");
-                using (FileStream fileStream = new FileStream(fileName, FileMode.Create))
-                {
-                    memoryStream.WriteTo(fileStream);
-                    fileStream.Dispose();
+                    string fileName = Path.Combine(Path.GetTempPath(), $@"certificate{dto.Id}.pdf");
+                    using (FileStream fileStream = new FileStream(fileName, FileMode.Create))
+                    {
+                        memoryStream.WriteTo(fileStream);
+                        fileStream.Dispose();
+                    }
+
+                    return memoryStream;
                 }
-
-                return memoryStream;
             }
             catch (Exception ex)
             {

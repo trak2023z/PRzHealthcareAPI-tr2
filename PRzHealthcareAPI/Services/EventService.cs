@@ -424,10 +424,10 @@ namespace PRzHealthcareAPI.Services
 
             foreach (var doctor in doctorsList)
             {
-                //if (doctor.Acc_Id == 16)
-                //{
-                //    continue;
-                //}
+                if (doctor.Acc_Id == 3)
+                {
+                    continue;
+                }
                 for (int i = 0; i < 30; i++)
                 {
 
