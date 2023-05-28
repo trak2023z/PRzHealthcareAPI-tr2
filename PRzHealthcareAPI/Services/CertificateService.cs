@@ -40,7 +40,7 @@ namespace PRzHealthcareAPI.Services
                 if (!_dbContext.BinData.Any(x => x.Bin_Name == "Certyfikat szczepienia"))
                 {
                     var certificateContent = Tools.ToBase64Converter(certificateFilePath);
-                    BinData data = new BinData()
+                    BinData data = new()
                     {
                         Bin_Name = "Certyfikat szczepienia",
                         Bin_Data = certificateContent,
@@ -53,7 +53,7 @@ namespace PRzHealthcareAPI.Services
                     _dbContext.BinData.Add(data);
                     _dbContext.SaveChanges();
 
-                    Certificate certificate = new Certificate()
+                    Certificate certificate = new()
                     {
                         Cer_AccId = accountId,
                         Cer_BinId = 1,
@@ -88,36 +88,32 @@ namespace PRzHealthcareAPI.Services
                 var baseCode = _dbContext.BinData.FirstOrDefault(x => x.Bin_Id == certificate.Cer_BinId).Bin_Data;
                 byte[] fileBytes = Convert.FromBase64String(baseCode);
 
-                using (MemoryStream stream = new MemoryStream(fileBytes))
+                using MemoryStream stream = new(fileBytes);
+                ReportWriter writer = new()
                 {
-                    BoldReports.Writer.ReportWriter writer = new BoldReports.Writer.ReportWriter();
-                    writer.ReportProcessingMode = ProcessingMode.Remote;
-                    List<BoldReports.Web.ReportParameter> userParameters = new List<BoldReports.Web.ReportParameter>
-            {
-                new BoldReports.Web.ReportParameter()
+                    ReportProcessingMode = ProcessingMode.Remote
+                };
+                List<BoldReports.Web.ReportParameter> userParameters = new() { new BoldReports.Web.ReportParameter() { Name = "EventId", Values = new List<string>() { dto.Id.ToString() } } };
+
+
+
+                string fileName = "ZaswiadczenieCOVID.pdf";
+                string type = "pdf";
+                WriterFormat format = WriterFormat.PDF;
+
+                writer.LoadReport(stream);
+                writer.SetParameters(userParameters);
+
+                MemoryStream memoryStream = new();
+                writer.Save(memoryStream, format);
+                memoryStream.Position = 0;
+
+                FileStreamResult fileStreamResult = new(memoryStream, "application/" + type)
                 {
-                    Name = "EventId",
-                    Values = new List<string>() { dto.Id.ToString() }
-                }
-            };
+                    FileDownloadName = fileName
+                };
 
-
-
-                    string fileName = "ZaswiadczenieCOVID.pdf";
-                    string type = "pdf";
-                    WriterFormat format = WriterFormat.PDF;
-
-                    writer.LoadReport(stream);
-                    writer.SetParameters(userParameters);
-                    MemoryStream memoryStream = new MemoryStream();
-                    writer.Save(memoryStream, format);
-                    memoryStream.Position = 0;
-                    FileStreamResult fileStreamResult = new FileStreamResult(memoryStream, "application/" + type);
-                    fileStreamResult.FileDownloadName = fileName;
-
-                    //File.Delete(filePath);
-                    return fileStreamResult;
-                }
+                return fileStreamResult;
 
             }
             catch (Exception ex)
@@ -136,44 +132,40 @@ namespace PRzHealthcareAPI.Services
         {
             try
             {
-                if (dto is null)
-                {
-                    dto = new EventDto() { Id = 7195 };
-                }
                 var certificate = _dbContext.Certificates.FirstOrDefault(x => x.Cer_Name == "Certyfikat szczepienia COVID");
                 var baseCode = _dbContext.BinData.FirstOrDefault(x => x.Bin_Id == certificate.Cer_BinId).Bin_Data;
                 byte[] fileBytes = Convert.FromBase64String(baseCode);
 
-                using (MemoryStream stream = new MemoryStream(fileBytes))
+                using MemoryStream stream = new(fileBytes);
+
+                ReportWriter writer = new()
                 {
-
-                    BoldReports.Writer.ReportWriter writer = new BoldReports.Writer.ReportWriter();
-                    writer.ReportProcessingMode = ProcessingMode.Remote;
-                    List<BoldReports.Web.ReportParameter> userParameters = new List<BoldReports.Web.ReportParameter>
-            {
-                new BoldReports.Web.ReportParameter()
-                {
-                    Name = "EventId",
-                    Values = new List<string>() { dto.Id.ToString() }
-                }
-            };
-
-                    WriterFormat format = WriterFormat.PDF;
-
-                    writer.LoadReport(stream);
-                    writer.SetParameters(userParameters);
-                    MemoryStream memoryStream = new MemoryStream();
-                    writer.Save(memoryStream, format);
-
-                    string fileName = Path.Combine(Path.GetTempPath(), $@"certificate{dto.Id}.pdf");
-                    using (FileStream fileStream = new FileStream(fileName, FileMode.Create))
+                    ReportProcessingMode = ProcessingMode.Remote
+                };
+                List<BoldReports.Web.ReportParameter> userParameters = new()
                     {
-                        memoryStream.WriteTo(fileStream);
-                        fileStream.Dispose();
-                    }
+                        new BoldReports.Web.ReportParameter()
+                        {
+                            Name = "EventId",
+                            Values = new List<string>() { dto.Id.ToString() }
+                        }
+                    };
 
-                    return memoryStream;
+                WriterFormat format = WriterFormat.PDF;
+
+                writer.LoadReport(stream);
+                writer.SetParameters(userParameters);
+                MemoryStream memoryStream = new();
+                writer.Save(memoryStream, format);
+
+                string fileName = Path.Combine(Path.GetTempPath(), $@"certificate{dto.Id}.pdf");
+                using (FileStream fileStream = new(fileName, FileMode.Create))
+                {
+                    memoryStream.WriteTo(fileStream);
+                    fileStream.Dispose();
                 }
+
+                return memoryStream;
             }
             catch (Exception ex)
             {
