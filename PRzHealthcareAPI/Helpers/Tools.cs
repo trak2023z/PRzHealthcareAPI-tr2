@@ -1,4 +1,5 @@
-﻿using PRzHealthcareAPI.Models;
+﻿using PRzHealthcareAPI.Exceptions;
+using PRzHealthcareAPI.Models;
 using System.Net.Mail;
 using System.Security.Cryptography;
 
@@ -6,12 +7,7 @@ namespace PRzHealthcareAPI.Helpers
 {
     public static class Tools
     {
-        private static string _senderEmail = "noreply@arcussoft.com.pl";
-        private static string _passwordEmail = "Guf26409";
-        private static string _host = "smtp.office365.com";
-        private static int _port = 587;
-        private static int _timeout = 10000;
-        private static string _starterLink = $@"https://przhealthcare-app.azurewebsites.net";
+        private static readonly string _starterLink = $@"https://przhealthcare-app.azurewebsites.net";
 
         /// <summary>
         /// Wysłanie powiadomienia o rejestracji użytkownika
@@ -24,8 +20,8 @@ namespace PRzHealthcareAPI.Helpers
         {
             try
             {
-                MailMessage objeto_mail = new MailMessage();
-                SmtpClient client = new SmtpClient
+                MailMessage objeto_mail = new();
+                SmtpClient client = new()
                 {
                     Port = emailSettings.Port,
                     Host = emailSettings.Host,
@@ -50,7 +46,7 @@ namespace PRzHealthcareAPI.Helpers
             }
             catch (Exception ex)
             {
-                return false;
+                throw new BadRequestException($@"Wystąpił błąd podczas wysyłania powiadomienia e-mail: {ex.Message}");
             }
         }
 
@@ -65,8 +61,8 @@ namespace PRzHealthcareAPI.Helpers
         {
             try
             {
-                MailMessage objeto_mail = new MailMessage();
-                SmtpClient client = new SmtpClient
+                MailMessage objeto_mail = new();
+                SmtpClient client = new()
                 {
                     Port = emailSettings.Port,
                     Host = emailSettings.Host,
@@ -91,6 +87,7 @@ namespace PRzHealthcareAPI.Helpers
             }
             catch (Exception ex)
             {
+                throw new BadRequestException($@"Wystąpił błąd podczas wysyłania powiadomienia e-mail: {ex.Message}");
                 return false;
             }
         }
@@ -107,8 +104,8 @@ namespace PRzHealthcareAPI.Helpers
         {
             try
             {
-                MailMessage objeto_mail = new MailMessage();
-                SmtpClient client = new SmtpClient
+                MailMessage objeto_mail = new();
+                SmtpClient client = new()
                 {
                     Port = emailSettings.Port,
                     Host = emailSettings.Host,
@@ -133,6 +130,7 @@ namespace PRzHealthcareAPI.Helpers
             }
             catch (Exception ex)
             {
+                throw new BadRequestException($@"Wystąpił błąd podczas wysyłania powiadomienia e-mail: {ex.Message}");
                 return false;
             }
         }
@@ -149,8 +147,8 @@ namespace PRzHealthcareAPI.Helpers
         {
             try
             {
-                MailMessage objeto_mail = new MailMessage();
-                SmtpClient client = new SmtpClient
+                MailMessage objeto_mail = new();
+                SmtpClient client = new()
                 {
                     Port = emailSettings.Port,
                     Host = emailSettings.Host,
@@ -175,6 +173,7 @@ namespace PRzHealthcareAPI.Helpers
             }
             catch (Exception ex)
             {
+                throw new BadRequestException($@"Wystąpił błąd podczas wysyłania powiadomienia e-mail: {ex.Message}");
                 return false;
             }
         }
@@ -191,8 +190,8 @@ namespace PRzHealthcareAPI.Helpers
         {
             try
             {
-                MailMessage objeto_mail = new MailMessage();
-                SmtpClient client = new SmtpClient
+                MailMessage objeto_mail = new();
+                SmtpClient client = new()
                 {
                     Port = emailSettings.Port,
                     Host = emailSettings.Host,
@@ -210,7 +209,7 @@ namespace PRzHealthcareAPI.Helpers
                 objeto_mail.Body = notification.Nty_Template
                     .Replace("@@NAZWA", $@"{user.Acc_Firstname} {user.Acc_Lastname}");
 
-                Attachment attachment = new Attachment(Path.Combine(Path.GetTempPath(), $@"certificate{finishedEvent.Eve_Id}.pdf"));
+                Attachment attachment = new(Path.Combine(Path.GetTempPath(), $@"certificate{finishedEvent.Eve_Id}.pdf"));
                 objeto_mail.Attachments.Add(attachment);
 
                 client.Send(objeto_mail);
@@ -219,6 +218,7 @@ namespace PRzHealthcareAPI.Helpers
             }
             catch (Exception ex)
             {
+                throw new BadRequestException($@"Wystąpił błąd podczas wysyłania powiadomienia e-mail: {ex.Message}");
                 return false;
             }
         }
@@ -265,11 +265,9 @@ namespace PRzHealthcareAPI.Helpers
                 string path = Path.Combine(hostingEnvironment.ContentRootPath, "wydruk.rpt");
                 if (File.Exists(path))
                 {
-                    using (FileStream stream = new FileStream(Path.Combine(hostingEnvironment.ContentRootPath, "wydruk.rpt"), FileMode.Open))
-                    {
-                        File.Delete(path);
-                        stream.Dispose();
-                    }
+                    using FileStream stream = new(Path.Combine(hostingEnvironment.ContentRootPath, "wydruk.rpt"), FileMode.Open);
+                    File.Delete(path);
+                    stream.Dispose();
                 }
 
 

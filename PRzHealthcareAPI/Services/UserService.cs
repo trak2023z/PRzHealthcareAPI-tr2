@@ -19,12 +19,12 @@ namespace PRzHealthcareAPI.Services
     {
         void ChangePassword(ChangeUserPasswordDto dto);
         LoginUserDto? GenerateToken(LoginUserDto dto);
-        Task<string> Register(RegisterUserDto dto);
-        Task<string> ConfirmMail(string hashcode);
+        void Register(RegisterUserDto dto);
+        void ConfirmMail(string hashcode);
         List<UserDto> GetDoctorsList();
-        Task<string> ResetPassword(ResetUserPasswordDto dto);
-        Task<string> ResetPasswordRequest(string email);
-        Task<string> ResetPasswordCheckHashCode(string hashcode);
+        void ResetPassword(ResetUserPasswordDto dto);
+        void ResetPasswordRequest(string email);
+        void ResetPasswordCheckHashCode(string hashcode);
         List<UserDto> GetPatientsList();
         UserDto GetSelectedUser(int userId);
     }
@@ -51,7 +51,7 @@ namespace PRzHealthcareAPI.Services
         /// </summary>
         /// <param name="dto">Obiekt użytkownika</param>
         /// <returns>Poprawność wykonania funkcji</returns>
-        public async Task<string> Register(RegisterUserDto dto)
+        public void Register(RegisterUserDto dto)
         {
             var loginExists = _dbContext.Accounts.Any(x => x.Acc_Login == dto.Login || x.Acc_Email == dto.Email || x.Acc_Pesel == dto.Pesel);
             if (loginExists)
@@ -70,8 +70,7 @@ namespace PRzHealthcareAPI.Services
                 newUser.Acc_Password = _passwordHasher.HashPassword(newUser, dto.Password);
                 newUser.Acc_AtyId = _dbContext.AccountTypes.FirstOrDefault(x => x.Aty_Name == "Niepotwierdzony").Aty_Id;
                 _dbContext.Accounts.Add(newUser);
-
-                await _dbContext.SaveChangesAsync();
+                _dbContext.SaveChanges();
 
                 Tools.SendRegistrationMail(_emailSettings, newUser, _dbContext.NotificationTypes.FirstOrDefault(x => x.Nty_Name == "Rejestracja użytkownika w systemie PRz Healthcare"));
                 Notification notif = new()
@@ -86,9 +85,8 @@ namespace PRzHealthcareAPI.Services
                     Not_ModifiedAccId = newUser.Acc_Id,
                 };
                 _dbContext.Notifications.Add(notif);
-                await _dbContext.SaveChangesAsync();
+                _dbContext.SaveChanges();
 
-                return "Ok";
             }
             catch (Exception ex)
             {
@@ -139,7 +137,7 @@ namespace PRzHealthcareAPI.Services
 
             var tokenHandler = new JwtSecurityTokenHandler();
 
-            LoginUserDto loginUser = new LoginUserDto()
+            LoginUserDto loginUser = new()
             {
                 AccId = user.Acc_Id,
                 Login = dto.Login,
@@ -164,7 +162,7 @@ namespace PRzHealthcareAPI.Services
                 return new List<UserDto>();
             }
 
-            List<UserDto> listUserDto = new List<UserDto>();
+            List<UserDto> listUserDto = new();
 
             foreach (var account in list)
             {
@@ -207,7 +205,7 @@ namespace PRzHealthcareAPI.Services
                 return new List<UserDto>();
             }
 
-            List<UserDto> listUserDto = new List<UserDto>();
+            List<UserDto> listUserDto = new();
 
             foreach (var account in list)
             {
@@ -222,7 +220,7 @@ namespace PRzHealthcareAPI.Services
         /// </summary>
         /// <param name="hashcode">Kod otrzymany w wiadomości email</param>
         /// <returns>Poprawność wykonania funkcji</returns>
-        public async Task<string> ConfirmMail(string hashcode)
+        public void ConfirmMail(string hashcode)
         {
             try
             {
@@ -240,8 +238,7 @@ namespace PRzHealthcareAPI.Services
                 var patientAccountTypeId = _dbContext.AccountTypes.FirstOrDefault(x => x.Aty_Name == "Pacjent").Aty_Id;
 
                 user.Acc_AtyId = patientAccountTypeId;
-                await _dbContext.SaveChangesAsync();
-                return "Ok";
+                _dbContext.SaveChanges();
             }
             catch (Exception ex)
             {
@@ -283,7 +280,7 @@ namespace PRzHealthcareAPI.Services
         /// </summary>
         /// <param name="email">Adres e-mail użytkownika</param>
         /// <returns>Poprawność wykonania funkcji</returns>
-        public async Task<string> ResetPasswordRequest(string email)
+        public void ResetPasswordRequest(string email)
         {
             try
             {
@@ -310,11 +307,10 @@ namespace PRzHealthcareAPI.Services
                     _dbContext.Notifications.Add(notif);
                     _dbContext.SaveChanges();
                 }
-                return "Ok";
             }
             catch (Exception ex)
             {
-                throw new BadRequestException("Wystąpił błąd podczas próby zresetowania hasła. Spróbuj ponownie za moment.");
+                throw new BadRequestException($@"Wystąpił błąd podczas próby zresetowania hasła. Spróbuj ponownie za moment. ({ex.Message})");
             }
             
         }
@@ -324,7 +320,7 @@ namespace PRzHealthcareAPI.Services
         /// </summary>
         /// <param name="dto">Obiekt zmiany hasła użytkownika</param>
         /// <returns>Poprawność wykonania funkcji</returns>
-        public async Task<string> ResetPassword(ResetUserPasswordDto dto)
+        public void ResetPassword(ResetUserPasswordDto dto)
         {
             try
             {
@@ -342,7 +338,7 @@ namespace PRzHealthcareAPI.Services
                     _dbContext.Accounts.Update(user);
                     _dbContext.SaveChanges();
                 }
-                return "Ok";
+               
             }
             catch (Exception ex)
             {
@@ -356,7 +352,7 @@ namespace PRzHealthcareAPI.Services
         /// </summary>
         /// <param name="hashcode">Kod zmiany hasła użytkownika</param>
         /// <returns>Poprawność wykonania funkcji</returns>
-        public async Task<string> ResetPasswordCheckHashCode(string hashcode)
+        public void ResetPasswordCheckHashCode(string hashcode)
         {
             try
             {
@@ -376,7 +372,6 @@ namespace PRzHealthcareAPI.Services
                     throw new BadRequestException("Link został przedawniony. Wybierz opcję 'Przypomnij hasło' ponownie");
                 }
 
-                return "Ok";
             }
             catch (Exception ex)
             {

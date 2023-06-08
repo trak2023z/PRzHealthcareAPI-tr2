@@ -22,9 +22,9 @@ namespace PRzHealthcareAPI.Controllers
 
         [AllowAnonymous]
         [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] RegisterUserDto dto)
+        public ActionResult Register([FromBody] RegisterUserDto dto)
         {
-            await _userService.Register(dto);
+            _userService.Register(dto);
             return Ok();
         }
 
@@ -57,10 +57,10 @@ namespace PRzHealthcareAPI.Controllers
 
         [AllowAnonymous]
         [HttpGet("confirm-mail")]
-        public async Task<IActionResult> ConfirmMail([FromQuery] string hashCode)
+        public ActionResult ConfirmMail([FromQuery] string hashCode)
         {
-            var message = await _userService.ConfirmMail(hashCode);
-            return Ok(message);
+            _userService.ConfirmMail(hashCode);
+            return Ok();
         }
 
         [HttpPut("changepassword")]

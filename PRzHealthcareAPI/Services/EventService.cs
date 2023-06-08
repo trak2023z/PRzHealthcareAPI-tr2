@@ -281,7 +281,7 @@ namespace PRzHealthcareAPI.Services
                 Not_ModifiedAccId = user.Acc_Id,
             };
             _dbContext.Notifications.Add(notif);
-            _dbContext.SaveChangesAsync();
+            _dbContext.SaveChanges();
         }
 
         /// <summary>
@@ -330,7 +330,7 @@ namespace PRzHealthcareAPI.Services
                 Not_ModifiedAccId = Convert.ToInt32(accountId),
             };
             _dbContext.Notifications.Add(notif);
-            _dbContext.SaveChangesAsync();
+            _dbContext.SaveChanges();
         }
 
         /// <summary>
@@ -377,7 +377,7 @@ namespace PRzHealthcareAPI.Services
                 Not_ModifiedAccId = Convert.ToInt32(accountId),
             };
             _dbContext.Notifications.Add(notif);
-            _dbContext.SaveChangesAsync();
+            _dbContext.SaveChanges();
         }
 
         /// <summary>

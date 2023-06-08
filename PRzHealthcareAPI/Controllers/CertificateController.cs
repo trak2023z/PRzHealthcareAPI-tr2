@@ -18,7 +18,7 @@ namespace PRzHealthcareAPI.Controllers
     public class CertificateController : ControllerBase
     {
         private readonly ICertificateService _certificateService;
-        private Microsoft.AspNetCore.Hosting.IWebHostEnvironment _hostingEnvironment;
+        private readonly Microsoft.AspNetCore.Hosting.IWebHostEnvironment _hostingEnvironment;
 
         public CertificateController(ICertificateService certificateService, IWebHostEnvironment hostingEnvironment)
         {

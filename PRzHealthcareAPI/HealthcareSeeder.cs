@@ -11,6 +11,12 @@ namespace PRzHealthcareAPI
         private readonly IPasswordHasher<Account> _passwordHasher;
         private readonly IEventService _eventService;
 
+        /// <summary>
+        /// Konstruktor klasy HealthcareSeeder
+        /// </summary>
+        /// <param name="dbContext">Kontekst bazy danych</param>
+        /// <param name="passwordHasher">Abstrakcyjna klasa IPasswordHasher</param>
+        /// <param name="eventService">Interfejs serwisu EventService</param>
         public HealthcareSeeder(HealthcareDbContext dbContext, IPasswordHasher<Account> passwordHasher, IEventService eventService)
         {
             this._dbContext = dbContext;
@@ -18,6 +24,9 @@ namespace PRzHealthcareAPI
             this._eventService = eventService;
         }
 
+        /// <summary>
+        /// Funkcja seedująca przykładowe dane na start aplikacji w nowej bazie danych.
+        /// </summary>
         public void Seed()
         {
             if (_dbContext.Database.CanConnect())
@@ -62,7 +71,6 @@ namespace PRzHealthcareAPI
                 {
                     _eventService.SeedDates();
                 }
-
             }
         }
 
